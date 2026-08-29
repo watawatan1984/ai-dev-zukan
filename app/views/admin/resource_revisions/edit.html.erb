@@ -7,6 +7,8 @@
       <label>作者<%= form.text_field :author_name %></label>
       <label>出典抜粋<%= form.text_area :source_excerpt, rows: 8 %></label>
       <label>AI要約<%= form.text_area :ai_summary, rows: 6, required: true %></label>
+      <label>カテゴリslug<%= form.text_field :suggested_category_slug, placeholder: "ruby-on-rails" %></label>
+      <label>タグslug（カンマ区切り）<%= form.text_field :suggested_tag_slugs, value: Array(@revision.suggested_tag_slugs).join(", "), placeholder: "rails, solid-queue" %></label>
       <%= form.submit "レビュー待ちとして保存", class: "button button-primary" %>
     <% end %>
   </div>

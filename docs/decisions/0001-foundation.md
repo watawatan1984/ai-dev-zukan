@@ -8,6 +8,8 @@ Status: accepted
 - サービス表示名は「AI開発図鑑」、リポジトリ名は`ai-dev-zukan`とする。
 - Rails SSR/Hotwireの単一アプリにし、Next.js/Vercel/Redis/UpstashはMVPに入れない。
 - 外部データはResource、内容の候補版はResourceRevisionへ分離し、管理者承認前は公開しない。
+- 承認済みRevisionは不変にし、承認されたカテゴリ・タグだけを公開Resourceへ反映する。
+- 人気度は媒体別の対数正規化スコアで並び替え、カードには取得元のスター・いいね実数を表示する。
 - NVIDIAのモデルは`NVIDIA_NIM_MODEL`で外部設定し、リポジトリでは固定しない。
 - Render Freeの制約に合わせ、Solid QueueをPumaから監督し、GASで10:00–20:59 JSTに10分間隔の署名付きtickを送る。
 - メールはSMTPではなくResend HTTPS API、画像はCloudflare R2、DBはNeon PostgreSQLを使う。

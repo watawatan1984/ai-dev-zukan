@@ -1,6 +1,6 @@
 class ResourcesController < ApplicationController
   def index
-    search_params = params.permit(:q, :kind, :category, :tag, :sort)
+    search_params = params.permit(:q, :kind, :category, :tag, :period, :sort)
     results = Search::ResourcesQuery.call(params: search_params, user: current_user)
 
     @result_count = results.count

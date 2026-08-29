@@ -12,7 +12,7 @@
 
   <div class="card-stats">
     <% if resource.current_revision.author_name.present? %><span>@<%= resource.current_revision.author_name %></span><% end %>
-    <% if resource.popularity_score.to_f.positive? %><span>★ <%= compact_number(resource.popularity_score) %></span><% end %>
+    <% if resource.popularity_raw.positive? %><span>★ <%= compact_number(resource.popularity_raw) %></span><% end %>
   </div>
 
   <div class="card-actions">

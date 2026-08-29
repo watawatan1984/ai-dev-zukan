@@ -28,4 +28,13 @@ class ResourceRevision < ApplicationRecord
 
   validates :title, :source_fingerprint, presence: true
   validates :source_fingerprint, uniqueness: { scope: :resource_id }
+  validate :approved_revision_is_immutable, on: :update
+
+  private
+
+  def approved_revision_is_immutable
+    return unless review_status_in_database == "approved"
+
+    errors.add(:base, "Approved revisions are immutable")
+  end
 end

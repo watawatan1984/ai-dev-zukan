@@ -63,6 +63,10 @@ module Ingestion
         source_published_at: snapshot.source_published_at,
         source_updated_at: snapshot.source_updated_at,
         popularity_raw: snapshot.popularity_raw || 0,
+        popularity_score: Popularity::Normalize.call(
+          provider: snapshot.provider,
+          raw_value: snapshot.popularity_raw
+        ),
         last_synced_at: Time.current
       )
     end

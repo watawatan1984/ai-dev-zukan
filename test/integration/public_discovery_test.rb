@@ -20,6 +20,7 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Alpha Skill", count: 0
     assert_select "[data-controller='theme']"
     assert_select "form[role='search']"
+    assert_select "select[name='period']"
   end
 
   private

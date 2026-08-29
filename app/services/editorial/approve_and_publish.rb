@@ -1,6 +1,7 @@
 module Editorial
   class ApproveAndPublish
     class ReviewerNotAuthorized < StandardError; end
+    class RevisionNotReady < StandardError; end
 
     def self.call(revision:, reviewer:, request_id: nil)
       new(revision: revision, reviewer: reviewer, request_id: request_id).call
@@ -14,15 +15,21 @@ module Editorial
 
     def call
       raise ReviewerNotAuthorized, "Only an admin can approve revisions" unless reviewer.admin?
+      unless revision.approved? || (revision.review_pending? && revision.ai_summary.present?)
+        raise RevisionNotReady, "Revision must have a reviewed summary before publication"
+      end
 
       revision.transaction do
         previous_status = revision.review_status
-        revision.update!(
-          review_status: :approved,
-          reviewer: reviewer,
-          reviewed_at: Time.current,
-          rejection_reason: nil
-        )
+        unless revision.approved?
+          revision.update!(
+            review_status: :approved,
+            reviewer: reviewer,
+            reviewed_at: Time.current,
+            rejection_reason: nil
+          )
+        end
+        Taxonomy::ApplyRevision.call(revision: revision)
         revision.resource.publish!(revision: revision)
         AdminAuditLog.create!(
           actor: reviewer,

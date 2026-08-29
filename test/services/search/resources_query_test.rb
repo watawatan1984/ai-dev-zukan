@@ -38,16 +38,39 @@ class Search::ResourcesQueryTest < ActiveSupport::TestCase
     assert_empty results
   end
 
+  test "period filter uses the original publication date" do
+    recent = create_resource_with_revision(
+      slug: "recent-article",
+      title: "Recent article",
+      summary: "最近の記事です。",
+      review_status: :approved,
+      source_published_at: 2.days.ago
+    )
+    old = create_resource_with_revision(
+      slug: "old-article",
+      title: "Old article",
+      summary: "古い記事です。",
+      review_status: :approved,
+      source_published_at: 2.years.ago
+    )
+    [ recent, old ].each { |resource| resource.publish!(revision: resource.revisions.first) }
+
+    results = Search::ResourcesQuery.call(params: { period: "30d" })
+
+    assert_equal [ recent ], results.to_a
+  end
+
   private
 
-  def create_resource_with_revision(slug:, title:, summary:, review_status:)
+  def create_resource_with_revision(slug:, title:, summary:, review_status:, source_published_at: nil)
     resource = Resource.create!(
       kind: :qiita_article,
       slug: slug,
       canonical_url: "https://qiita.com/example/items/#{slug}",
       normalized_canonical_url: "https://qiita.com/example/items/#{slug}",
       source_provider: :qiita,
-      external_uid: slug
+      external_uid: slug,
+      source_published_at: source_published_at
     )
     resource.revisions.create!(
       origin: :imported,

@@ -9,11 +9,11 @@
 
   <div class="review-grid">
     <section class="admin-panel"><p class="eyebrow">SOURCE EXCERPT</p><h2>要約根拠</h2><div class="source-excerpt"><%= simple_format(@revision.source_excerpt) %></div></section>
-    <section class="admin-panel"><p class="eyebrow">AI SUMMARY</p><h2>公開候補の要約</h2><div class="source-excerpt"><%= simple_format(@revision.ai_summary) %></div></section>
+    <section class="admin-panel"><p class="eyebrow">AI SUMMARY</p><h2>公開候補の要約</h2><div class="source-excerpt"><%= simple_format(@revision.ai_summary) %></div><p>カテゴリ: <%= @revision.suggested_category_slug.presence || "未設定" %></p><p>タグ: <%= Array(@revision.suggested_tag_slugs).join(", ").presence || "未設定" %></p></section>
   </div>
 
   <div class="review-actions">
-    <%= link_to "候補を編集", edit_admin_resource_revision_path(@revision), class: "button button-secondary" %>
-    <% unless @revision.approved? %><%= button_to "承認して公開", approve_and_publish_admin_resource_revision_path(@revision), method: :post, class: "button button-primary" %><% end %>
+    <% unless @revision.approved? %><%= link_to "候補を編集", edit_admin_resource_revision_path(@revision), class: "button button-secondary" %><% end %>
+    <% if @revision.review_pending? && @revision.ai_summary.present? %><%= button_to "承認して公開", approve_and_publish_admin_resource_revision_path(@revision), method: :post, class: "button button-primary" %><% end %>
   </div>
 </section>

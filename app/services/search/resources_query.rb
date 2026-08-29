@@ -1,6 +1,11 @@
 module Search
   class ResourcesQuery
     ALLOWED_SORTS = %w[relevance popular newest].freeze
+    PERIODS = {
+      "7d" => 7.days,
+      "30d" => 30.days,
+      "1y" => 1.year
+    }.freeze
 
     def self.call(params:, user: nil)
       new(params: params, user: user).call
@@ -17,6 +22,7 @@ module Search
       relation = filter_kind(relation)
       relation = filter_category(relation)
       relation = filter_tag(relation)
+      relation = filter_period(relation)
       relation = filter_query(relation)
       order(relation)
     end
@@ -41,6 +47,13 @@ module Search
       return relation if params[:tag].blank?
 
       relation.joins(:tags).where(tags: { slug: params[:tag] })
+    end
+
+    def filter_period(relation)
+      duration = PERIODS[params[:period]]
+      return relation unless duration
+
+      relation.where(source_published_at: (Time.current - duration)..)
     end
 
     def exclude_hidden(relation)

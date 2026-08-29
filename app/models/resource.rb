@@ -58,7 +58,9 @@ class Resource < ApplicationRecord
         search_text: Search::Normalize.call([
           revision.title,
           revision.author_name,
-          revision.ai_summary
+          revision.ai_summary,
+          category&.name,
+          tags.pluck(:name)
         ].compact.join(" "))
       )
     end

@@ -36,6 +36,8 @@ class Ingestion::UpsertSnapshotTest < ActiveSupport::TestCase
     result = Ingestion::UpsertSnapshot.call(snapshot: snapshot)
 
     assert_equal :created_revision, result.status
+    assert_equal 120, result.resource.popularity_raw
+    assert_operator result.resource.popularity_score, :>, 0
     assert_equal published_revision, resource.reload.current_revision
     assert_predicate resource, :published?
     assert_equal "Example MCP v2", result.revision.title

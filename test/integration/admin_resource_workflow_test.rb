@@ -25,6 +25,21 @@ class AdminResourceWorkflowTest < ActionDispatch::IntegrationTest
     assert_predicate revision, :summary_status_manually_written?
     assert_predicate revision.resource, :unpublished?
     assert_equal "https://github.com/example/manual-mcp", revision.resource.normalized_canonical_url
+
+    patch admin_resource_revision_path(revision), params: {
+      resource_revision: {
+        title: revision.title,
+        author_name: revision.author_name,
+        source_excerpt: revision.source_excerpt,
+        ai_summary: revision.ai_summary,
+        suggested_category_slug: "developer-tools",
+        suggested_tag_slugs: "mcp, github, mcp"
+      }
+    }
+
+    assert_redirected_to admin_resource_revision_path(revision)
+    assert_equal "developer-tools", revision.reload.suggested_category_slug
+    assert_equal %w[mcp github mcp], revision.suggested_tag_slugs
   end
 
   test "admin can send a manual candidate through the AI review queue" do

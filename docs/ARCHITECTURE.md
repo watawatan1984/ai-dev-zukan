@@ -12,13 +12,15 @@ RailsのSSRモノリスを中心にする。ブラウザーと管理者はCloudf
 - `Ai`: NVIDIA実装とテスト用Adapterが満たすSeam
 - `Search`: 公開Resourceの検索と順位付けを扱うQuery Module
 - `Recommendations`: 種類、カテゴリ、共通タグから説明可能な候補を返すModule
+- `Popularity`: GitHubスター数と記事リアクション数を媒体別の対数スケールで0〜1へ正規化するModule。画面には元の実数値を表示する
+- `Taxonomy`: 管理者が承認したAI候補のカテゴリ・タグだけを公開Resourceへ反映するModule
 - `Scheduler`: GASの署名を検証し、時間単位の取込処理を冪等に投入するModule
 
 コントローラーとジョブは同じModuleのInterfaceを呼ぶ。HTTPクライアントやAIクライアントをコントローラーから直接呼ばない。
 
 ## ResourceとRevision
 
-`Resource`は外部コンテンツの恒久的な識別子で、`ResourceRevision`は公開候補となる内容の版である。公開画面は`Resource.current_revision`だけを参照する。新しい外部Snapshotは新しいRevisionになり、管理者承認まで公開版を変更しない。
+`Resource`は外部コンテンツの恒久的な識別子で、`ResourceRevision`は公開候補となる内容の版である。公開画面は`Resource.current_revision`だけを参照する。新しい外部Snapshotは新しいRevisionになり、管理者承認まで公開版を変更しない。一度承認されたRevisionはモデル層で不変にし、修正は新しい候補版で行う。
 
 ## 外部コンテンツ方針
 

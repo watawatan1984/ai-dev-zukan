@@ -22,6 +22,8 @@ module Admin
         request_id: request.request_id
       )
       redirect_to resource_path(resource.slug), notice: "承認して公開しました。"
+    rescue Editorial::ApproveAndPublish::RevisionNotReady => error
+      redirect_to admin_resource_revision_path(@revision), alert: error.message
     end
 
     private
@@ -31,7 +33,18 @@ module Admin
     end
 
     def revision_params
-      params.expect(resource_revision: [ :title, :author_name, :source_excerpt, :ai_summary ])
+      permitted = params.expect(resource_revision: [
+        :title,
+        :author_name,
+        :source_excerpt,
+        :ai_summary,
+        :suggested_category_slug,
+        :suggested_tag_slugs
+      ])
+      permitted[:suggested_tag_slugs] = permitted[:suggested_tag_slugs].to_s
+        .split(",")
+        .filter_map { |value| value.strip.presence }
+      permitted
     end
   end
 end

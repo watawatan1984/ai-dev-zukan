@@ -49,6 +49,10 @@
         </label>
       <% end %>
 
+      <label class="select-label">公開時期
+        <%= form.select :period, [["指定なし", ""], ["7日以内", "7d"], ["30日以内", "30d"], ["1年以内", "1y"]], selected: params[:period] %>
+      </label>
+
       <label class="select-label">並び順
         <%= form.select :sort, [["おすすめ", "relevance"], ["人気順", "popular"], ["新着順", "newest"]], selected: params[:sort] %>
       </label>
