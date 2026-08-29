@@ -1,30 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja" data-theme="light">
   <head>
-    <title><%= content_for(:title) || "Ai Dev Zukan" %></title>
+    <title><%= content_for(:title) || "AI開発図鑑 | MCP・Skills・技術記事を探す" %></title>
+    <meta name="description" content="<%= content_for(:description) || "MCP、AI Skills、Zenn・Qiitaの技術記事を、出典付きAI要約から横断検索できる開発者向けライブラリーです。" %>">
+    <meta property="og:title" content="<%= content_for(:title) || "AI開発図鑑" %>">
+    <meta property="og:description" content="<%= content_for(:description) || "MCP・Skills・技術記事を出典付きAI要約から横断検索。" %>">
+    <meta property="og:type" content="<%= content_for?(:canonical) ? "article" : "website" %>">
+    <meta property="og:url" content="<%= content_for(:canonical) || request.original_url %>">
+    <meta property="og:image" content="<%= "#{request.base_url}/icon.png" %>">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Ai Dev Zukan">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0b1220">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= yield :head %>
-
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= tag.link rel: "canonical", href: content_for(:canonical) if content_for?(:canonical) %>
+    <script nonce="<%= content_security_policy_nonce %>">
+      (() => {
+        const saved = localStorage.getItem("appearance") || "system";
+        const dark = saved === "dark" || (saved === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      })();
+    </script>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+  <body data-controller="theme">
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <%= link_to root_path, class: "brand", aria: { label: "AI開発図鑑 トップ" } do %>
+          <span class="brand-mark" aria-hidden="true">AI</span>
+          <span>AI開発図鑑</span>
+        <% end %>
+
+        <nav class="primary-nav" aria-label="メインナビゲーション">
+          <%= link_to "探す", resources_path %>
+          <% if user_signed_in? %>
+            <%= link_to "マイページ", my_root_path %>
+            <%= link_to "管理", admin_root_path if current_user.admin? %>
+          <% end %>
+        </nav>
+
+        <div class="header-actions">
+          <label class="theme-picker">
+            <span class="sr-only">表示テーマ</span>
+            <select data-theme-target="select" data-action="change->theme#change" aria-label="表示テーマ">
+              <option value="system">端末設定</option>
+              <option value="light">ライト</option>
+              <option value="dark">ダーク</option>
+            </select>
+          </label>
+          <% if user_signed_in? %>
+            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "button button-quiet" %>
+          <% else %>
+            <%= link_to "ログイン", new_user_session_path, class: "button button-quiet" %>
+            <%= link_to "無料登録", new_user_registration_path, class: "button button-primary" %>
+          <% end %>
+        </div>
+      </div>
+    </header>
+
+    <div class="flash-stack" aria-live="polite">
+      <% flash.each do |type, message| %>
+        <div class="flash flash-<%= type %>"><%= message %></div>
+      <% end %>
+    </div>
+
+    <main id="main-content" class="page-shell" data-controller="search-shortcut" data-action="keydown@window->search-shortcut#focus">
       <%= yield %>
     </main>
   </body>

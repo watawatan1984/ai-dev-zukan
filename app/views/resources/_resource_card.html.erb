@@ -1,0 +1,29 @@
+<article class="resource-card">
+  <div class="card-meta">
+    <span class="kind-badge kind-<%= resource.kind %>"><%= resource_kind_label(resource) %></span>
+    <span><%= source_provider_label(resource) %></span>
+    <% if resource.published_at %>
+      <time datetime="<%= resource.published_at.iso8601 %>"><%= l(resource.published_at.to_date, format: :long) %></time>
+    <% end %>
+  </div>
+
+  <h2><%= link_to resource.current_revision.title, resource_path(resource.slug) %></h2>
+  <p class="card-summary"><%= resource.current_revision.ai_summary.presence || "要約を準備しています。" %></p>
+
+  <div class="card-stats">
+    <% if resource.current_revision.author_name.present? %><span>@<%= resource.current_revision.author_name %></span><% end %>
+    <% if resource.popularity_score.to_f.positive? %><span>★ <%= compact_number(resource.popularity_score) %></span><% end %>
+  </div>
+
+  <div class="card-actions">
+    <% if user_signed_in? %>
+      <% if @bookmarked_ids.include?(resource.id) %>
+        <%= button_to "保存済み", resource_bookmark_path(resource.slug), method: :delete, class: "icon-button is-active" %>
+      <% else %>
+        <%= button_to "気になる", resource_bookmark_path(resource.slug), method: :post, class: "icon-button" %>
+      <% end %>
+      <%= button_to "非表示", resource_hidden_resource_path(resource.slug), method: :post, class: "icon-button" %>
+    <% end %>
+    <%= link_to "詳しく見る →", resource_path(resource.slug), class: "detail-link" %>
+  </div>
+</article>

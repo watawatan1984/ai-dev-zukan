@@ -1,0 +1,83 @@
+<% revision = @resource.current_revision %>
+<% content_for :title, "#{revision.title} | AI開発図鑑" %>
+<% content_for :description, truncate(revision.ai_summary.to_s, length: 120) %>
+<% content_for :canonical, resource_url(@resource.slug) %>
+<% content_for :head do %>
+  <%= tag.script type: "application/ld+json" do %>
+    <%== json_escape({
+      "@context" => "https://schema.org",
+      "@type" => (@resource.kind_zenn_article? || @resource.kind_qiita_article?) ? "TechArticle" : "SoftwareApplication",
+      "name" => revision.title,
+      "description" => revision.ai_summary,
+      "url" => resource_url(@resource.slug),
+      "sameAs" => @resource.canonical_url,
+      "author" => revision.author_name.present? ? { "@type" => "Person", "name" => revision.author_name } : nil,
+      "datePublished" => @resource.source_published_at&.iso8601,
+      "dateModified" => @resource.source_updated_at&.iso8601
+    }.compact.to_json) %>
+  <% end %>
+<% end %>
+
+<article class="resource-detail">
+  <%= link_to "← 一覧へ戻る", resources_path, class: "back-link" %>
+
+  <header class="detail-header">
+    <div class="card-meta">
+      <span class="kind-badge kind-<%= @resource.kind %>"><%= resource_kind_label(@resource) %></span>
+      <span><%= source_provider_label(@resource) %></span>
+    </div>
+    <h1><%= revision.title %></h1>
+    <div class="detail-byline">
+      <% if revision.author_name.present? %><span>投稿者 <strong><%= revision.author_name %></strong></span><% end %>
+      <% if @resource.source_published_at.present? %><time datetime="<%= @resource.source_published_at.iso8601 %>"><%= l(@resource.source_published_at.to_date, format: :long) %></time><% end %>
+    </div>
+  </header>
+
+  <section class="summary-card">
+    <p class="eyebrow">AI SUMMARY</p>
+    <h2>このリソースでできること</h2>
+    <p><%= revision.ai_summary.presence || "要約を準備しています。" %></p>
+    <small>AIによる要約です。正確な仕様は公開元をご確認ください。</small>
+  </section>
+
+  <section class="source-card">
+    <div>
+      <p class="eyebrow">ORIGINAL SOURCE</p>
+      <h2>公開元で詳細を確認</h2>
+      <p>最新情報、導入手順、ライセンスは必ず元ページで確認してください。</p>
+    </div>
+    <%= link_to "#{source_provider_label(@resource)}で見る ↗", @resource.canonical_url, target: "_blank", rel: "noopener noreferrer", class: "button button-primary" %>
+  </section>
+
+  <% if user_signed_in? %>
+    <div class="detail-actions">
+      <% if @bookmarked %>
+        <%= button_to "保存を解除", resource_bookmark_path(@resource.slug), method: :delete, class: "button button-secondary" %>
+      <% else %>
+        <%= button_to "気になるに保存", resource_bookmark_path(@resource.slug), method: :post, class: "button button-primary" %>
+      <% end %>
+      <%= button_to "このリソースを非表示", resource_hidden_resource_path(@resource.slug), method: :post, class: "button button-quiet" %>
+    </div>
+  <% end %>
+
+  <% if @recommendations.any? %>
+    <section class="recommendations">
+      <div class="results-heading">
+        <div>
+          <p class="eyebrow">RELATED RESOURCES</p>
+          <h2>関連するリソース</h2>
+        </div>
+        <p>タグ・カテゴリ・種類から提案</p>
+      </div>
+      <div class="recommendation-grid">
+        <% @recommendations.each do |recommendation| %>
+          <article class="recommendation-card">
+            <span class="kind-badge kind-<%= recommendation.resource.kind %>"><%= resource_kind_label(recommendation.resource) %></span>
+            <h3><%= link_to recommendation.resource.current_revision.title, resource_path(recommendation.resource.slug) %></h3>
+            <p><%= recommendation.reasons.join("・") %></p>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</article>

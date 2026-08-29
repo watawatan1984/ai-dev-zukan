@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: ai-dev-zukan
+    runtime: docker
+    plan: free
+    healthCheckPath: /up
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: APP_HOST
+        sync: false
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: QUEUE_DATABASE_URL
+        sync: false
+      - key: SOLID_QUEUE_IN_PUMA
+        value: "1"
+      - key: RAILS_MAX_THREADS
+        value: "3"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: MAILER_FROM
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_NIM_MODEL
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: QIITA_ACCESS_TOKEN
+        sync: false
+      - key: GAS_SCHEDULER_SECRET
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_ENDPOINT
+        sync: false

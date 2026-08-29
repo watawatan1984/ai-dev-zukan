@@ -1,0 +1,13 @@
+<section class="admin-page narrow-admin-page">
+  <%= render "admin/navigation" %>
+  <header class="section-header"><div><p class="eyebrow">EDIT CANDIDATE</p><h1>候補版を編集</h1></div></header>
+  <div class="admin-panel">
+    <%= form_with model: [:admin, @revision], class: "editor-form" do |form| %>
+      <label>タイトル<%= form.text_field :title, required: true %></label>
+      <label>作者<%= form.text_field :author_name %></label>
+      <label>出典抜粋<%= form.text_area :source_excerpt, rows: 8 %></label>
+      <label>AI要約<%= form.text_area :ai_summary, rows: 6, required: true %></label>
+      <%= form.submit "レビュー待ちとして保存", class: "button button-primary" %>
+    <% end %>
+  </div>
+</section>

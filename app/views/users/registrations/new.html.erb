@@ -1,0 +1,31 @@
+<section class="auth-shell">
+  <div class="auth-intro">
+    <p class="eyebrow">CREATE ACCOUNT</p>
+    <h1>調査の続きを、<br>自分のライブラリーに。</h1>
+    <p>登録は無料です。気になるリソースを保存し、不要な情報を非表示にできます。</p>
+  </div>
+
+  <div class="auth-card">
+    <h2>無料アカウント登録</h2>
+    <p>確認メールのリンクを開くと登録が完了します。</p>
+    <%= render "users/shared/error_messages", resource: resource %>
+
+    <% if google_oauth_configured? %>
+      <%= button_to "Googleで登録", user_google_oauth2_omniauth_authorize_path, data: { turbo: false }, class: "button button-google button-wide" %>
+      <div class="auth-divider"><span>または</span></div>
+    <% end %>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "auth-form" }) do |form| %>
+      <label>表示名<%= form.text_field :name, autofocus: true, autocomplete: "name", required: true, maxlength: 80 %></label>
+      <label>メールアドレス<%= form.email_field :email, autocomplete: "email", required: true %></label>
+      <label>パスワード
+        <span class="field-note"><%= @minimum_password_length %>文字以上</span>
+        <%= form.password_field :password, autocomplete: "new-password", required: true %>
+      </label>
+      <label>パスワード（確認）<%= form.password_field :password_confirmation, autocomplete: "new-password", required: true %></label>
+      <%= form.submit "確認メールを送信", class: "button button-primary button-wide" %>
+    <% end %>
+
+    <%= render "users/shared/links" %>
+  </div>
+</section>

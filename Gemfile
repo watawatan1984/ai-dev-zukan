@@ -17,6 +17,24 @@ gem "stimulus-rails"
 # Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
 gem "tailwindcss-rails"
 
+# Authentication and Google account sign-in
+gem "devise", "~> 5.0"
+gem "omniauth-google-oauth2", "~> 1.2"
+gem "omniauth-rails_csrf_protection", "~> 2.0"
+
+# Database-backed background jobs for the zero-cost single-service deployment
+gem "solid_queue", "~> 1.2"
+
+# HTTP clients for source APIs and NVIDIA NIM
+gem "faraday", "~> 2.0"
+gem "rss", "~> 0.3"
+
+# HTTPS email delivery works on Render Free, where outbound SMTP ports are blocked.
+gem "resend"
+
+# Cloudflare R2 uses the S3-compatible Active Storage adapter
+gem "aws-sdk-s3", require: false
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
@@ -49,6 +67,7 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  gem "foreman"
 end
 
 group :test do

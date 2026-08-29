@@ -1,0 +1,23 @@
+<section class="library-page">
+  <header class="section-header"><div><p class="eyebrow">MY LIBRARY</p><h1>マイページ</h1></div><p>保存した資料と非表示設定を管理できます。</p></header>
+
+  <section class="library-section">
+    <div class="results-heading"><div><h2>気になる</h2></div><span><%= @bookmarked_resources.size %>件</span></div>
+    <div class="library-list">
+      <% @bookmarked_resources.each do |resource| %>
+        <article><div><span class="kind-badge"><%= resource_kind_label(resource) %></span><h3><%= link_to resource.current_revision.title, resource_path(resource.slug) %></h3></div><%= button_to "保存を解除", resource_bookmark_path(resource.slug), method: :delete, class: "button button-quiet" %></article>
+      <% end %>
+      <% if @bookmarked_resources.empty? %><div class="empty-state"><p>気になるリソースはまだありません。</p><%= link_to "探しに行く", resources_path, class: "button button-secondary" %></div><% end %>
+    </div>
+  </section>
+
+  <section class="library-section">
+    <div class="results-heading"><div><h2>非表示</h2></div><span><%= @hidden_resources.size %>件</span></div>
+    <div class="library-list">
+      <% @hidden_resources.each do |resource| %>
+        <article><div><span class="kind-badge"><%= resource_kind_label(resource) %></span><h3><%= resource.current_revision.title %></h3></div><%= button_to "非表示を解除", resource_hidden_resource_path(resource.slug), method: :delete, class: "button button-secondary" %></article>
+      <% end %>
+      <% if @hidden_resources.empty? %><p class="muted-copy">非表示にしたリソースはありません。</p><% end %>
+    </div>
+  </section>
+</section>

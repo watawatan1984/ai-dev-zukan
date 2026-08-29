@@ -1,0 +1,18 @@
+<section class="admin-page narrow-admin-page">
+  <%= render "admin/navigation" %>
+  <header class="section-header"><div><p class="eyebrow">MANUAL ENTRY</p><h1>リソースを手動追加</h1></div></header>
+
+  <div class="admin-panel">
+    <%= form_with url: admin_resources_path, scope: :resource, class: "editor-form" do |form| %>
+      <div class="form-row">
+        <label>種類<%= form.select :kind, Resource.kinds.keys.map { |kind| [ApplicationHelper::RESOURCE_KIND_LABELS.fetch(kind), kind] } %></label>
+        <label>作者<%= form.text_field :author_name %></label>
+      </div>
+      <label>タイトル<%= form.text_field :title, required: true %></label>
+      <label>公開元URL<%= form.url_field :canonical_url, required: true, placeholder: "https://..." %></label>
+      <label>出典抜粋<%= form.text_area :source_excerpt, rows: 7, placeholder: "READMEや記事の概要など、要約根拠となる抜粋" %></label>
+      <label>要約（任意）<span class="field-note">空欄ならNVIDIA NIMの非同期要約へ送ります</span><%= form.text_area :ai_summary, rows: 5 %></label>
+      <%= form.submit "レビュー候補を作成", class: "button button-primary" %>
+    <% end %>
+  </div>
+</section>

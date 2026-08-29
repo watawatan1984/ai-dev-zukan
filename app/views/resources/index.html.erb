@@ -1,0 +1,83 @@
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">AI DEVELOPMENT INDEX</p>
+    <h1>次に使うMCP・Skill・技術記事を、<span>すばやく見つける。</span></h1>
+    <p>公開元の情報とAI要約をひとつの画面で比較。気になった資料は保存して、あとからまとめて確認できます。</p>
+  </div>
+
+  <%= form_with url: resources_path, method: :get, class: "hero-search", html: { role: "search" } do |form| %>
+    <span class="search-icon" aria-hidden="true">⌕</span>
+    <%= form.search_field :q,
+          value: params[:q],
+          placeholder: "例: GitHubを操作するMCP",
+          autocomplete: "off",
+          aria: { label: "リソースを検索" },
+          data: { search_shortcut_target: "input" } %>
+    <kbd>/</kbd>
+    <%= form.submit "検索", class: "button button-primary" %>
+  <% end %>
+</section>
+
+<section class="discovery-layout" aria-label="リソース検索結果">
+  <aside class="filter-panel">
+    <div class="panel-heading">
+      <h2>絞り込み</h2>
+      <%= link_to "リセット", resources_path %>
+    </div>
+
+    <%= form_with url: resources_path, method: :get, class: "filter-form" do |form| %>
+      <%= form.hidden_field :q, value: params[:q] %>
+
+      <fieldset>
+        <legend>コンテンツ</legend>
+        <%= form.collection_radio_buttons :kind,
+              [["", "すべて"], ["mcp", "MCP"], ["skill", "Skill"], ["zenn_article", "Zenn"], ["qiita_article", "Qiita"]],
+              :first, :last do |field| %>
+          <label class="filter-option"><%= field.radio_button checked: params[:kind].to_s == field.value %><span><%= field.text %></span></label>
+        <% end %>
+      </fieldset>
+
+      <% if @categories.any? %>
+        <label class="select-label">カテゴリ
+          <%= form.collection_select :category, @categories, :slug, :name, { include_blank: "すべて", selected: params[:category] } %>
+        </label>
+      <% end %>
+
+      <% if @tags.any? %>
+        <label class="select-label">タグ
+          <%= form.collection_select :tag, @tags, :slug, :name, { include_blank: "すべて", selected: params[:tag] } %>
+        </label>
+      <% end %>
+
+      <label class="select-label">並び順
+        <%= form.select :sort, [["おすすめ", "relevance"], ["人気順", "popular"], ["新着順", "newest"]], selected: params[:sort] %>
+      </label>
+      <%= form.submit "適用する", class: "button button-secondary button-wide" %>
+    <% end %>
+  </aside>
+
+  <div class="results-panel">
+    <div class="results-heading">
+      <div>
+        <p class="eyebrow">LIBRARY</p>
+        <h2><%= number_with_delimiter(@result_count) %>件のリソース</h2>
+      </div>
+      <% if params[:q].present? %>
+        <span class="query-chip">“<%= params[:q] %>” の検索結果</span>
+      <% end %>
+    </div>
+
+    <div class="resource-grid">
+      <% if @resources.any? %>
+        <%= render partial: "resource_card", collection: @resources, as: :resource %>
+      <% else %>
+        <div class="empty-state">
+          <p class="empty-icon" aria-hidden="true">⌕</p>
+          <h2>該当するリソースがありません</h2>
+          <p>検索語や絞り込み条件を変えてお試しください。</p>
+          <%= link_to "すべて表示", resources_path, class: "button button-secondary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

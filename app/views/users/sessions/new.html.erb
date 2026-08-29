@@ -1,0 +1,28 @@
+<section class="auth-shell">
+  <div class="auth-intro">
+    <p class="eyebrow">WELCOME BACK</p>
+    <h1>保存したリソースへ、<br>すぐ戻れます。</h1>
+    <p>MCP、Skills、記事の「気になる」と非表示設定を、端末をまたいで管理できます。</p>
+  </div>
+
+  <div class="auth-card">
+    <h2>ログイン</h2>
+    <p>登録したメールアドレスで続けます。</p>
+
+    <% if google_oauth_configured? %>
+      <%= button_to "Googleでログイン", user_google_oauth2_omniauth_authorize_path, data: { turbo: false }, class: "button button-google button-wide" %>
+      <div class="auth-divider"><span>または</span></div>
+    <% end %>
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "auth-form" }) do |form| %>
+      <label>メールアドレス<%= form.email_field :email, autofocus: true, autocomplete: "email", required: true %></label>
+      <label>パスワード<%= form.password_field :password, autocomplete: "current-password", required: true %></label>
+      <% if devise_mapping.rememberable? %>
+        <label class="check-label"><%= form.check_box :remember_me %><span>ログイン状態を保持する</span></label>
+      <% end %>
+      <%= form.submit "ログイン", class: "button button-primary button-wide" %>
+    <% end %>
+
+    <%= render "users/shared/links" %>
+  </div>
+</section>

@@ -1,0 +1,22 @@
+<section class="admin-page">
+  <%= render "admin/navigation" %>
+  <header class="section-header"><div><p class="eyebrow">EDITORIAL</p><h1>リソース管理</h1></div><p>公開版と候補版を分離して管理します。</p></header>
+
+  <div class="admin-panel admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>タイトル</th><th>種類</th><th>公開状態</th><th>候補</th><th></th></tr></thead>
+      <tbody>
+        <% @resources.each do |resource| %>
+          <% candidate = resource.revisions.max_by(&:created_at) %>
+          <tr>
+            <td><strong><%= resource.current_revision&.title || candidate&.title %></strong><small><%= resource.canonical_url %></small></td>
+            <td><%= resource_kind_label(resource) %></td>
+            <td><span class="status status-<%= resource.publication_status %>"><%= resource.publication_status %></span></td>
+            <td><%= candidate&.review_status %></td>
+            <td><%= link_to "確認 →", admin_resource_revision_path(candidate), class: "detail-link" if candidate %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

@@ -1,0 +1,51 @@
+<section class="admin-page">
+  <%= render "admin/navigation" %>
+  <header class="section-header">
+    <div><p class="eyebrow">OPERATIONS</p><h1>管理ダッシュボード</h1></div>
+    <p>レビューと自動取込の状態を、ここで追跡できます。</p>
+  </header>
+
+  <div class="metric-grid">
+    <article><span>レビュー待ち</span><strong><%= @review_pending_count %></strong></article>
+    <article><span>AI要約失敗</span><strong><%= @summary_failed_count %></strong></article>
+    <article><span>公開中</span><strong><%= @published_count %></strong></article>
+  </div>
+
+  <div class="admin-grid">
+    <section class="admin-panel">
+      <div class="panel-heading"><h2>レビュー候補</h2><%= link_to "すべて見る", admin_resources_path %></div>
+      <div class="admin-list">
+        <% @review_candidates.each do |revision| %>
+          <%= link_to admin_resource_revision_path(revision), class: "admin-list-item" do %>
+            <div><strong><%= revision.title %></strong><span><%= revision.resource.kind %> · <%= l(revision.created_at, format: :short) %></span></div>
+            <span>確認 →</span>
+          <% end %>
+        <% end %>
+        <% if @review_candidates.empty? %><p class="muted-copy">現在、レビュー待ちはありません。</p><% end %>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <div class="panel-heading"><h2>最近の取込</h2><span>ImportRun</span></div>
+      <div class="admin-list">
+        <% @recent_import_runs.each do |run| %>
+          <div class="admin-list-item">
+            <div><strong><%= run.source_name %></strong><span><%= l(run.started_at, format: :short) %> · 取得 <%= run.fetched_count %>件</span></div>
+            <span class="status status-<%= run.status %>"><%= run.status %></span>
+          </div>
+        <% end %>
+        <% if @recent_import_runs.empty? %><p class="muted-copy">取込実績はまだありません。</p><% end %>
+      </div>
+    </section>
+  </div>
+
+  <section class="admin-panel admin-panel-wide">
+    <div class="panel-heading"><h2>GASスケジューラー</h2><span>10:00–20:59 JST</span></div>
+    <div class="admin-list compact-list">
+      <% @recent_scheduled_executions.each do |execution| %>
+        <div class="admin-list-item"><strong><%= l(execution.scheduled_for, format: :short) %></strong><span class="status status-<%= execution.status %>"><%= execution.status %></span></div>
+      <% end %>
+      <% if @recent_scheduled_executions.empty? %><p class="muted-copy">tickの実行記録はまだありません。</p><% end %>
+    </div>
+  </section>
+</section>
