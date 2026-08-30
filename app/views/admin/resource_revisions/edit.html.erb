@@ -3,12 +3,53 @@
   <header class="section-header"><div><p class="eyebrow">EDIT CANDIDATE</p><h1>候補版を編集</h1></div></header>
   <div class="admin-panel">
     <%= form_with model: [:admin, @revision], class: "editor-form" do |form| %>
+      <% if @taxonomy_errors.present? || @revision.errors.any? %>
+        <div class="form-errors">
+          <% Array(@taxonomy_errors).each do |message| %>
+            <p><%= message %></p>
+          <% end %>
+          <% @revision.errors.full_messages.each do |message| %>
+            <p><%= message %></p>
+          <% end %>
+        </div>
+      <% end %>
+
       <label>タイトル<%= form.text_field :title, required: true %></label>
       <label>作者<%= form.text_field :author_name %></label>
-      <label>出典抜粋<%= form.text_area :source_excerpt, rows: 8 %></label>
       <label>AI要約<%= form.text_area :ai_summary, rows: 6, required: true %></label>
-      <label>カテゴリslug<%= form.text_field :suggested_category_slug, placeholder: "ruby-on-rails" %></label>
-      <label>タグslug（カンマ区切り）<%= form.text_field :suggested_tag_slugs, value: Array(@revision.suggested_tag_slugs).join(", "), placeholder: "rails, solid-queue" %></label>
+      <label>機能<%= text_area_tag "resource_revision[capabilities][]", Array(@revision.capabilities).join("\n"), rows: 4 %></label>
+      <label>要点<%= text_area_tag "resource_revision[key_points][]", Array(@revision.key_points).join("\n"), rows: 4 %></label>
+      <label>検索キーワード<%= text_area_tag "resource_revision[search_keywords][]", Array(@revision.search_keywords).join("\n"), rows: 3 %></label>
+
+      <fieldset class="admin-checkbox-group">
+        <legend>カテゴリ（1〜3件）</legend>
+        <%= hidden_field_tag "resource_revision[suggested_category_slugs][]", "" %>
+        <% @category_options.each do |category| %>
+          <label>
+            <%= check_box_tag "resource_revision[suggested_category_slugs][]", category.fetch("slug"), Array(@revision.effective_suggested_category_slugs).include?(category.fetch("slug")) %>
+            <span><%= category.fetch("name") %></span>
+            <small><%= category.fetch("slug") %></small>
+          </label>
+        <% end %>
+      </fieldset>
+
+      <fieldset class="admin-checkbox-group">
+        <legend>タグ（2〜6件）</legend>
+        <%= hidden_field_tag "resource_revision[suggested_tag_slugs][]", "" %>
+        <% @tag_options.group_by { |tag| tag.fetch("group") }.each do |group, tags| %>
+          <div class="admin-tag-group">
+            <h3><%= group %></h3>
+            <% tags.each do |tag| %>
+              <label>
+                <%= check_box_tag "resource_revision[suggested_tag_slugs][]", tag.fetch("slug"), Array(@revision.suggested_tag_slugs).include?(tag.fetch("slug")) %>
+                <span><%= tag.fetch("name") %></span>
+                <small><%= tag.fetch("slug") %></small>
+              </label>
+            <% end %>
+          </div>
+        <% end %>
+      </fieldset>
+
       <%= form.submit "レビュー待ちとして保存", class: "button button-primary" %>
     <% end %>
   </div>

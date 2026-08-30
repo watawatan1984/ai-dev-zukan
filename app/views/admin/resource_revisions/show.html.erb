@@ -9,7 +9,25 @@
 
   <div class="review-grid">
     <section class="admin-panel"><p class="eyebrow">SOURCE EXCERPT</p><h2>要約根拠</h2><div class="source-excerpt"><%= simple_format(@revision.source_excerpt) %></div></section>
-    <section class="admin-panel"><p class="eyebrow">AI SUMMARY</p><h2>公開候補の要約</h2><div class="source-excerpt"><%= simple_format(@revision.ai_summary) %></div><p>カテゴリ: <%= @revision.suggested_category_slug.presence || "未設定" %></p><p>タグ: <%= Array(@revision.suggested_tag_slugs).join(", ").presence || "未設定" %></p></section>
+    <section class="admin-panel">
+      <p class="eyebrow">AI SUMMARY</p>
+      <h2>公開候補の要約</h2>
+      <div class="source-excerpt"><%= simple_format(@revision.ai_summary) %></div>
+      <p>カテゴリ: <%= Array(@revision.effective_suggested_category_slugs).join(", ").presence || "未設定" %></p>
+      <p>タグ: <%= Array(@revision.suggested_tag_slugs).join(", ").presence || "未設定" %></p>
+      <p>分類状態: <%= @revision.taxonomy_status %> / <%= @revision.taxonomy_origin %></p>
+      <p>分類AI: <%= [@revision.taxonomy_provider, @revision.taxonomy_model, @revision.taxonomy_prompt_version].compact.join(" / ").presence || "未設定" %></p>
+      <p>分類信頼度: <%= @revision.taxonomy_confidence || "未設定" %></p>
+      <% if @taxonomy_validation&.valid? %>
+        <p class="status status-succeeded">分類は公開可能です。</p>
+      <% else %>
+        <div class="form-errors">
+          <% Array(@taxonomy_validation&.errors).each do |message| %>
+            <p><%= message %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
   </div>
 
   <div class="review-actions">

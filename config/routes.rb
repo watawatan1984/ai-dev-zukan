@@ -16,6 +16,10 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#index"
     resources :resources, only: [ :index, :new, :create ]
+    get "taxonomy", to: "taxonomy#index", as: :taxonomy
+    resources :tags, only: :create do
+      post :merge, on: :member
+    end
     resources :resource_revisions, only: [ :show, :edit, :update ] do
       post :approve_and_publish, on: :member
     end

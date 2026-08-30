@@ -1,0 +1,75 @@
+<section class="admin-page">
+  <%= render "admin/navigation" %>
+  <header class="section-header">
+    <div>
+      <p class="eyebrow">TAXONOMY</p>
+      <h1>分類管理</h1>
+    </div>
+  </header>
+
+  <% if flash[:alert].present? %>
+    <div class="form-errors"><p><%= flash[:alert] %></p></div>
+  <% end %>
+
+  <section class="admin-panel">
+    <div class="panel-heading">
+      <h2>タグ追加</h2>
+      <span>管理語彙へ即時追加</span>
+    </div>
+    <%= form_with url: admin_tags_path, scope: :tag, class: "editor-form" do |form| %>
+      <label>slug<%= form.text_field :slug, required: true, placeholder: "solid-queue" %></label>
+      <label>表示名<%= form.text_field :name, required: true, placeholder: "Solid Queue" %></label>
+      <label>グループ
+        <%= form.select :vocabulary_group, Taxonomy::Registry.definition.fetch("tag_groups").keys.map { |group| [group, group] }, required: true %>
+      </label>
+      <label>別名（改行またはカンマ区切り）<%= form.text_area :aliases, rows: 3 %></label>
+      <label><%= form.check_box :active, checked: true %><span>active</span></label>
+      <label><%= form.check_box :filterable %><span>filterable</span></label>
+      <%= form.submit "タグを追加", class: "button button-primary" %>
+    <% end %>
+  </section>
+
+  <div class="review-grid">
+    <section class="admin-panel">
+      <div class="panel-heading">
+        <h2>カテゴリ</h2>
+        <span>固定14件</span>
+      </div>
+      <div class="admin-list">
+        <% @categories.each do |category| %>
+          <article class="admin-list-item" data-category-slug="<%= category.fetch("slug") %>">
+            <strong><%= category.fetch("name") %></strong>
+            <span><%= category.fetch("slug") %></span>
+          </article>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <div class="panel-heading">
+        <h2>タグ</h2>
+        <span>active DB vocabulary</span>
+      </div>
+      <div class="admin-list">
+        <% @tags.each do |tag| %>
+          <article class="admin-list-item" data-tag-slug="<%= tag.slug %>">
+            <div>
+              <strong><%= tag.name %></strong>
+              <span><%= tag.slug %> / <%= tag.vocabulary_group %></span>
+              <span>aliases: <%= tag.tag_aliases.order(:normalized_name).pluck(:name).join(", ").presence || "なし" %></span>
+            </div>
+            <div>
+              <span class="status status-<%= tag.active? ? "succeeded" : "failed" %>">active</span>
+              <span class="status status-<%= tag.filterable? ? "succeeded" : "failed" %>">filterable</span>
+              <span data-usage-count><%= @usage_counts.fetch(tag.id, 0) %></span>
+            </div>
+            <%= form_with url: merge_admin_tag_path(tag), method: :post, class: "editor-form" do |form| %>
+              <%= form.select :destination_tag_id, @tags.reject { |candidate| candidate.id == tag.id }.map { |candidate| [candidate.name, candidate.id] } %>
+              <%= form.submit "統合", class: "button button-secondary" %>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  </div>
+</section>
