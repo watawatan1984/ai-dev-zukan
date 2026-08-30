@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -47,7 +47,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
     t.integer "position", default: 0, null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
+    t.index ["active", "position"], name: "index_categories_on_active_and_position"
     t.index ["slug"], name: "index_categories_on_slug", unique: true
+  end
+
+  create_table "controlled_resource_tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "origin", default: 0, null: false
+    t.bigint "resource_id", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resource_id", "tag_id"], name: "index_controlled_resource_tags_on_resource_id_and_tag_id", unique: true
+    t.index ["resource_id"], name: "index_controlled_resource_tags_on_resource_id"
+    t.index ["tag_id"], name: "index_controlled_resource_tags_on_tag_id"
   end
 
   create_table "hidden_resources", force: :cascade do |t|
@@ -87,6 +99,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
     t.index ["user_id"], name: "index_oauth_identities_on_user_id"
   end
 
+  create_table "resource_categories", force: :cascade do |t|
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "origin", default: 0, null: false
+    t.bigint "resource_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_resource_categories_on_category_id"
+    t.index ["resource_id", "category_id"], name: "index_resource_categories_on_resource_id_and_category_id", unique: true
+    t.index ["resource_id"], name: "index_resource_categories_on_resource_id"
+  end
+
   create_table "resource_revisions", force: :cascade do |t|
     t.string "ai_model"
     t.string "ai_provider"
@@ -102,20 +125,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
     t.integer "review_status", default: 0, null: false
     t.datetime "reviewed_at"
     t.bigint "reviewed_by_id"
+    t.jsonb "search_keywords", default: [], null: false
     t.text "source_excerpt"
     t.string "source_fingerprint", null: false
     t.string "suggested_category_slug"
+    t.jsonb "suggested_category_slugs", default: [], null: false
     t.jsonb "suggested_tag_slugs", default: [], null: false
     t.string "summary_basis"
     t.datetime "summary_generated_at"
     t.string "summary_input_sha256"
     t.integer "summary_status", default: 0, null: false
+    t.decimal "taxonomy_confidence", precision: 4, scale: 3
+    t.datetime "taxonomy_generated_at"
+    t.string "taxonomy_input_sha256"
+    t.string "taxonomy_model"
+    t.integer "taxonomy_origin", default: 1, null: false
+    t.string "taxonomy_prompt_version"
+    t.string "taxonomy_provider"
+    t.integer "taxonomy_status", default: 0, null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["resource_id", "source_fingerprint"], name: "index_resource_revisions_on_resource_and_fingerprint", unique: true
     t.index ["resource_id"], name: "index_resource_revisions_on_resource_id"
     t.index ["review_status", "created_at"], name: "index_resource_revisions_on_review_status_and_created_at"
     t.index ["reviewed_by_id"], name: "index_resource_revisions_on_reviewed_by_id"
+    t.index ["taxonomy_status", "created_at"], name: "index_resource_revisions_on_taxonomy_status_and_created_at"
   end
 
   create_table "resource_tags", force: :cascade do |t|
@@ -321,12 +355,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
     t.index ["key"], name: "index_solid_queue_semaphores_on_key", unique: true
   end
 
-  create_table "tags", force: :cascade do |t|
+  create_table "tag_aliases", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.string "normalized_name", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["normalized_name"], name: "index_tag_aliases_on_normalized_name", unique: true
+    t.index ["tag_id"], name: "index_tag_aliases_on_tag_id"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.boolean "active", default: false, null: false
+    t.datetime "created_at", null: false
+    t.boolean "filterable", default: false, null: false
+    t.string "name", null: false
+    t.string "normalized_name", null: false
+    t.integer "position", default: 0, null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
+    t.string "vocabulary_group"
+    t.index ["active", "filterable", "vocabulary_group", "position"], name: "index_tags_on_visibility_group_and_position"
     t.index ["normalized_name"], name: "index_tags_on_normalized_name", unique: true
     t.index ["slug"], name: "index_tags_on_slug", unique: true
   end
@@ -359,9 +408,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
   add_foreign_key "admin_audit_logs", "users", column: "actor_id"
   add_foreign_key "bookmarks", "resources"
   add_foreign_key "bookmarks", "users"
+  add_foreign_key "controlled_resource_tags", "resources"
+  add_foreign_key "controlled_resource_tags", "tags"
   add_foreign_key "hidden_resources", "resources"
   add_foreign_key "hidden_resources", "users"
   add_foreign_key "oauth_identities", "users"
+  add_foreign_key "resource_categories", "categories"
+  add_foreign_key "resource_categories", "resources"
   add_foreign_key "resource_revisions", "resources"
   add_foreign_key "resource_revisions", "users", column: "reviewed_by_id"
   add_foreign_key "resource_tags", "resources"
@@ -376,4 +429,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "tag_aliases", "tags"
 end

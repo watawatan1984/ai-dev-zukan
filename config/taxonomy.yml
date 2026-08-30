@@ -1,0 +1,611 @@
+version: taxonomy-v2
+categories:
+  - slug: coding-development
+    name: コード作成・開発支援
+    position: 10
+    active: true
+  - slug: design-review
+    name: 設計・コードレビュー
+    position: 20
+    active: true
+  - slug: testing-quality
+    name: テスト・品質改善
+    position: 30
+    active: true
+  - slug: debugging-observability-performance
+    name: デバッグ・監視・性能改善
+    position: 40
+    active: true
+  - slug: research-search
+    name: 調査・検索
+    position: 50
+    active: true
+  - slug: documentation-knowledge
+    name: ドキュメント・ナレッジ管理
+    position: 60
+    active: true
+  - slug: automation-integration
+    name: 自動化・外部サービス連携
+    position: 70
+    active: true
+  - slug: data-databases
+    name: データベース・データ処理
+    position: 80
+    active: true
+  - slug: infrastructure-devops
+    name: インフラ・クラウド・DevOps
+    position: 90
+    active: true
+  - slug: security-governance
+    name: セキュリティ・ガバナンス
+    position: 100
+    active: true
+  - slug: ai-llm-agents
+    name: AI・LLM・エージェント開発
+    position: 110
+    active: true
+  - slug: design-content
+    name: UI/UX・コンテンツ制作
+    position: 120
+    active: true
+  - slug: project-business-management
+    name: プロジェクト・業務管理
+    position: 130
+    active: true
+  - slug: learning-career
+    name: 学習・キャリア
+    position: 140
+    active: true
+tag_groups:
+  language_framework: 言語・フレームワーク
+  platform_service: サービス・プラットフォーム
+  product_tool: 製品・ツール
+  technique_architecture: 技術要素・アーキテクチャ
+  environment_runtime: 対象環境・ランタイム
+tags:
+  - slug: python
+    name: Python
+    group: language_framework
+    position: 10
+    active: true
+    filterable: false
+    aliases: []
+  - slug: typescript
+    name: TypeScript
+    group: language_framework
+    position: 20
+    active: true
+    filterable: false
+    aliases: []
+  - slug: javascript
+    name: JavaScript
+    group: language_framework
+    position: 30
+    active: true
+    filterable: false
+    aliases: []
+  - slug: ruby
+    name: Ruby
+    group: language_framework
+    position: 40
+    active: true
+    filterable: true
+    aliases: []
+  - slug: ruby-on-rails
+    name: Ruby on Rails
+    group: language_framework
+    position: 50
+    active: true
+    filterable: true
+    aliases: [rails, rubyonrails]
+  - slug: go
+    name: Go
+    group: language_framework
+    position: 60
+    active: true
+    filterable: false
+    aliases: []
+  - slug: rust
+    name: Rust
+    group: language_framework
+    position: 70
+    active: true
+    filterable: false
+    aliases: []
+  - slug: java
+    name: Java
+    group: language_framework
+    position: 80
+    active: true
+    filterable: false
+    aliases: []
+  - slug: csharp
+    name: C#
+    group: language_framework
+    position: 90
+    active: true
+    filterable: false
+    aliases: [c-sharp]
+  - slug: swift
+    name: Swift
+    group: language_framework
+    position: 100
+    active: true
+    filterable: false
+    aliases: []
+  - slug: swiftui
+    name: SwiftUI
+    group: language_framework
+    position: 110
+    active: true
+    filterable: false
+    aliases: []
+  - slug: kotlin
+    name: Kotlin
+    group: language_framework
+    position: 120
+    active: true
+    filterable: false
+    aliases: []
+  - slug: react
+    name: React
+    group: language_framework
+    position: 130
+    active: true
+    filterable: false
+    aliases: []
+  - slug: nextjs
+    name: Next.js
+    group: language_framework
+    position: 140
+    active: true
+    filterable: false
+    aliases: [next-js]
+  - slug: sql
+    name: SQL
+    group: language_framework
+    position: 150
+    active: true
+    filterable: false
+    aliases: []
+  - slug: github
+    name: GitHub
+    group: platform_service
+    position: 10
+    active: true
+    filterable: false
+    aliases: []
+  - slug: github-actions
+    name: GitHub Actions
+    group: platform_service
+    position: 20
+    active: true
+    filterable: false
+    aliases: []
+  - slug: aws
+    name: AWS
+    group: platform_service
+    position: 30
+    active: true
+    filterable: false
+    aliases: []
+  - slug: azure
+    name: Azure
+    group: platform_service
+    position: 40
+    active: true
+    filterable: false
+    aliases: []
+  - slug: cloudflare
+    name: Cloudflare
+    group: platform_service
+    position: 50
+    active: true
+    filterable: false
+    aliases: []
+  - slug: supabase
+    name: Supabase
+    group: platform_service
+    position: 60
+    active: true
+    filterable: false
+    aliases: []
+  - slug: postgresql
+    name: PostgreSQL
+    group: platform_service
+    position: 70
+    active: true
+    filterable: false
+    aliases: [postgres]
+  - slug: mysql
+    name: MySQL
+    group: platform_service
+    position: 80
+    active: true
+    filterable: false
+    aliases: []
+  - slug: docker
+    name: Docker
+    group: platform_service
+    position: 90
+    active: true
+    filterable: false
+    aliases: []
+  - slug: kubernetes
+    name: Kubernetes
+    group: platform_service
+    position: 100
+    active: true
+    filterable: false
+    aliases: []
+  - slug: terraform
+    name: Terraform
+    group: platform_service
+    position: 110
+    active: true
+    filterable: false
+    aliases: []
+  - slug: vercel
+    name: Vercel
+    group: platform_service
+    position: 120
+    active: true
+    filterable: false
+    aliases: []
+  - slug: claude
+    name: Claude
+    group: product_tool
+    position: 10
+    active: true
+    filterable: false
+    aliases: [claude-ai, anthropic-claude]
+  - slug: claude-code
+    name: Claude Code
+    group: product_tool
+    position: 20
+    active: true
+    filterable: false
+    aliases: []
+  - slug: codex
+    name: Codex
+    group: product_tool
+    position: 30
+    active: true
+    filterable: false
+    aliases: []
+  - slug: cursor
+    name: Cursor
+    group: product_tool
+    position: 40
+    active: true
+    filterable: false
+    aliases: []
+  - slug: playwright
+    name: Playwright
+    group: product_tool
+    position: 50
+    active: true
+    filterable: false
+    aliases: []
+  - slug: puppeteer
+    name: Puppeteer
+    group: product_tool
+    position: 60
+    active: true
+    filterable: false
+    aliases: []
+  - slug: ollama
+    name: Ollama
+    group: product_tool
+    position: 70
+    active: true
+    filterable: false
+    aliases: []
+  - slug: obsidian
+    name: Obsidian
+    group: product_tool
+    position: 80
+    active: true
+    filterable: false
+    aliases: []
+  - slug: figma
+    name: Figma
+    group: product_tool
+    position: 90
+    active: true
+    filterable: false
+    aliases: []
+  - slug: vscode
+    name: VS Code
+    group: product_tool
+    position: 100
+    active: true
+    filterable: false
+    aliases: []
+  - slug: fastmcp
+    name: FastMCP
+    group: product_tool
+    position: 110
+    active: true
+    filterable: false
+    aliases: []
+  - slug: mcp
+    name: MCP
+    group: technique_architecture
+    position: 10
+    active: true
+    filterable: false
+    aliases: [model-context-protocol, mcp-server, mcp-protocol]
+  - slug: agent-skills
+    name: Agent Skills
+    group: technique_architecture
+    position: 20
+    active: true
+    filterable: false
+    aliases: []
+  - slug: ai-agents
+    name: AI Agents
+    group: technique_architecture
+    position: 30
+    active: true
+    filterable: false
+    aliases: [ai-agent, agentic-ai, coding-agent, coding-agents, ai-coding-agent, ai-coding-agents]
+  - slug: rag
+    name: RAG
+    group: technique_architecture
+    position: 40
+    active: true
+    filterable: false
+    aliases: []
+  - slug: prompt-engineering
+    name: Prompt Engineering
+    group: technique_architecture
+    position: 50
+    active: true
+    filterable: false
+    aliases: []
+  - slug: llm
+    name: LLM
+    group: technique_architecture
+    position: 60
+    active: true
+    filterable: false
+    aliases: []
+  - slug: local-llm
+    name: Local LLM
+    group: technique_architecture
+    position: 70
+    active: true
+    filterable: false
+    aliases: []
+  - slug: browser-automation
+    name: Browser Automation
+    group: technique_architecture
+    position: 80
+    active: true
+    filterable: false
+    aliases: []
+  - slug: web-scraping
+    name: Web Scraping
+    group: technique_architecture
+    position: 90
+    active: true
+    filterable: false
+    aliases: [web-crawling]
+  - slug: workflow-automation
+    name: Workflow Automation
+    group: technique_architecture
+    position: 100
+    active: true
+    filterable: false
+    aliases: []
+  - slug: api-integration
+    name: API Integration
+    group: technique_architecture
+    position: 110
+    active: true
+    filterable: false
+    aliases: []
+  - slug: code-review
+    name: Code Review
+    group: technique_architecture
+    position: 120
+    active: true
+    filterable: false
+    aliases: []
+  - slug: testing
+    name: Testing
+    group: technique_architecture
+    position: 130
+    active: true
+    filterable: false
+    aliases: []
+  - slug: debugging
+    name: Debugging
+    group: technique_architecture
+    position: 140
+    active: true
+    filterable: false
+    aliases: []
+  - slug: observability
+    name: Observability
+    group: technique_architecture
+    position: 150
+    active: true
+    filterable: false
+    aliases: []
+  - slug: performance
+    name: Performance
+    group: technique_architecture
+    position: 160
+    active: true
+    filterable: false
+    aliases: [performance-optimization, performance-tuning]
+  - slug: security
+    name: Security
+    group: technique_architecture
+    position: 170
+    active: true
+    filterable: false
+    aliases: []
+  - slug: accessibility
+    name: Accessibility
+    group: technique_architecture
+    position: 180
+    active: true
+    filterable: false
+    aliases: []
+  - slug: seo
+    name: SEO
+    group: technique_architecture
+    position: 190
+    active: true
+    filterable: false
+    aliases: []
+  - slug: ci-cd
+    name: CI/CD
+    group: technique_architecture
+    position: 200
+    active: true
+    filterable: false
+    aliases: [cicd, cicd-devops]
+  - slug: authentication
+    name: Authentication
+    group: technique_architecture
+    position: 210
+    active: true
+    filterable: false
+    aliases: []
+  - slug: oauth
+    name: OAuth
+    group: technique_architecture
+    position: 220
+    active: true
+    filterable: false
+    aliases: []
+  - slug: tdd
+    name: TDD
+    group: technique_architecture
+    position: 230
+    active: true
+    filterable: false
+    aliases: [test-driven-development]
+  - slug: knowledge-graph
+    name: Knowledge Graph
+    group: technique_architecture
+    position: 240
+    active: true
+    filterable: false
+    aliases: []
+  - slug: vector-database
+    name: Vector Database
+    group: technique_architecture
+    position: 250
+    active: true
+    filterable: false
+    aliases: []
+  - slug: multi-agent
+    name: Multi-Agent
+    group: technique_architecture
+    position: 260
+    active: true
+    filterable: false
+    aliases: []
+  - slug: automation
+    name: Automation
+    group: technique_architecture
+    position: 270
+    active: true
+    filterable: false
+    aliases: []
+  - slug: image-generation
+    name: Image Generation
+    group: technique_architecture
+    position: 280
+    active: true
+    filterable: false
+    aliases: []
+  - slug: video-generation
+    name: Video Generation
+    group: technique_architecture
+    position: 290
+    active: true
+    filterable: false
+    aliases: []
+  - slug: data-analysis
+    name: Data Analysis
+    group: technique_architecture
+    position: 300
+    active: true
+    filterable: false
+    aliases: []
+  - slug: document-processing
+    name: Document Processing
+    group: technique_architecture
+    position: 310
+    active: true
+    filterable: false
+    aliases: []
+  - slug: web
+    name: Web
+    group: environment_runtime
+    position: 10
+    active: true
+    filterable: false
+    aliases: []
+  - slug: windows
+    name: Windows
+    group: environment_runtime
+    position: 20
+    active: true
+    filterable: false
+    aliases: []
+  - slug: macos
+    name: macOS
+    group: environment_runtime
+    position: 30
+    active: true
+    filterable: false
+    aliases: []
+  - slug: linux
+    name: Linux
+    group: environment_runtime
+    position: 40
+    active: true
+    filterable: false
+    aliases: []
+  - slug: ios
+    name: iOS
+    group: environment_runtime
+    position: 50
+    active: true
+    filterable: false
+    aliases: [ios-development]
+  - slug: android
+    name: Android
+    group: environment_runtime
+    position: 60
+    active: true
+    filterable: false
+    aliases: [android-development]
+  - slug: cloud
+    name: Cloud
+    group: environment_runtime
+    position: 70
+    active: true
+    filterable: false
+    aliases: []
+  - slug: local-first
+    name: Local-first
+    group: environment_runtime
+    position: 80
+    active: true
+    filterable: false
+    aliases: []
+  - slug: self-hosted
+    name: Self-hosted
+    group: environment_runtime
+    position: 90
+    active: true
+    filterable: false
+    aliases: []

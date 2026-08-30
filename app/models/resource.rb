@@ -29,9 +29,13 @@ class Resource < ApplicationRecord
   belongs_to :current_revision,
     class_name: "ResourceRevision",
     optional: true
-  belongs_to :category, optional: true
-  has_many :resource_tags, dependent: :destroy
-  has_many :tags, through: :resource_tags
+  belongs_to :category, optional: true # legacy rollback relation
+  has_many :resource_categories, dependent: :destroy
+  has_many :controlled_categories, through: :resource_categories, source: :category
+  has_many :resource_tags, dependent: :destroy # legacy rollback relation
+  has_many :tags, through: :resource_tags # legacy rollback relation
+  has_many :controlled_resource_tags, dependent: :destroy
+  has_many :controlled_tags, through: :controlled_resource_tags, source: :tag
   has_many :bookmarks, dependent: :destroy
   has_many :hidden_resource_records, class_name: "HiddenResource", dependent: :destroy
 
