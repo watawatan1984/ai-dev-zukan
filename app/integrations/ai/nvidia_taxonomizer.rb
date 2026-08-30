@@ -108,9 +108,9 @@ module Ai
       raise ProviderError, "NVIDIA NIM returned confidence outside 0.0-1.0" unless confidence.is_a?(Numeric) && confidence.between?(0, 1)
 
       suggestion = Ai::TaxonomySuggestion.new(
-        category_slugs: bounded_slug_list(payload.fetch("category_slugs")),
-        tag_slugs: bounded_slug_list(payload.fetch("tag_slugs")),
-        search_keywords: bounded_search_keywords(payload["search_keywords"]),
+        category_slugs: bounded_slug_list(payload.fetch("category_slugs"), "category_slugs"),
+        tag_slugs: bounded_slug_list(payload.fetch("tag_slugs"), "tag_slugs"),
+        search_keywords: bounded_search_keywords(payload.fetch("search_keywords")),
         confidence: confidence.to_f,
         provider: "nvidia",
         model: model,
@@ -137,11 +137,15 @@ module Ai
       end
     end
 
-    def bounded_slug_list(values)
+    def bounded_slug_list(values, field)
+      raise ProviderError, "NVIDIA NIM taxonomy JSON #{field} must be an array" unless values.is_a?(Array)
+
       Array(values).filter_map { |value| value.to_s.unicode_normalize(:nfkc).strip.downcase.presence }
     end
 
     def bounded_search_keywords(values)
+      raise ProviderError, "NVIDIA NIM taxonomy JSON search_keywords must be an array" unless values.is_a?(Array)
+
       Array(values).filter_map { |value| Search::Normalize.call(value).presence }
     end
   end

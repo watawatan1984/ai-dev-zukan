@@ -94,6 +94,32 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
     }.to_json)
   end
 
+  test "rejects scalar and missing array fields" do
+    assert_provider_error_for({
+      category_slugs: "automation-integration",
+      tag_slugs: [ "ruby", "api-integration" ],
+      search_keywords: [],
+      confidence: 0.9
+    }.to_json)
+    assert_provider_error_for({
+      category_slugs: [ "automation-integration" ],
+      tag_slugs: "ruby",
+      search_keywords: [],
+      confidence: 0.9
+    }.to_json)
+    assert_provider_error_for({
+      category_slugs: [ "automation-integration" ],
+      tag_slugs: [ "ruby", "api-integration" ],
+      search_keywords: "Solid Queue",
+      confidence: 0.9
+    }.to_json)
+    assert_provider_error_for({
+      category_slugs: [ "automation-integration" ],
+      tag_slugs: [ "ruby", "api-integration" ],
+      confidence: 0.9
+    }.to_json)
+  end
+
   private
 
   def assert_provider_error_for(content)

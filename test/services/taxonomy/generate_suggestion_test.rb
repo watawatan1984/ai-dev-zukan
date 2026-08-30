@@ -114,6 +114,54 @@ class Taxonomy::GenerateSuggestionTest < ActiveSupport::TestCase
     assert_predicate processing.reload, :taxonomy_status_processing?
   end
 
+  test "does not claim or fail an approved revision" do
+    approved = build_revision(
+      taxonomy_status: :queued,
+      review_status: :review_pending,
+      suggested_category_slugs: [ "coding-development" ],
+      suggested_tag_slugs: [ "ruby", "testing" ]
+    )
+    Editorial::ApproveAndPublish.call(revision: approved, reviewer: users(:admin))
+    approved.update_columns(
+      taxonomy_status: ResourceRevision.taxonomy_statuses.fetch("queued"),
+      taxonomy_input_sha256: nil
+    )
+    taxonomizer = Class.new do
+      attr_reader :calls
+
+      def call(revision:)
+        @calls = calls.to_i + 1
+        raise "approved revisions must not be classified"
+      end
+    end.new
+
+    Taxonomy::GenerateSuggestion.call(revision: approved, taxonomizer:)
+
+    approved.reload
+    assert_equal 0, taxonomizer.calls.to_i
+    assert_predicate approved, :approved?
+    assert_predicate approved, :taxonomy_status_queued?
+    assert_nil approved.taxonomy_input_sha256
+  end
+
+  test "does not mark a revision failed if it becomes approved after claim" do
+    revision = build_revision(taxonomy_status: :queued)
+    taxonomizer = Class.new do
+      def call(revision:)
+        revision.update_columns(review_status: ResourceRevision.review_statuses.fetch("approved"))
+        raise Faraday::TimeoutError, "provider timeout"
+      end
+    end.new
+
+    assert_raises(Faraday::TimeoutError) do
+      Taxonomy::GenerateSuggestion.call(revision:, taxonomizer:)
+    end
+
+    revision.reload
+    assert_predicate revision, :approved?
+    assert_predicate revision, :taxonomy_status_processing?
+  end
+
   private
 
   def build_revision(

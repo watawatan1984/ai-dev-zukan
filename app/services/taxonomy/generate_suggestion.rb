@@ -43,7 +43,7 @@ module Taxonomy
 
     def claim_revision
       ResourceRevision
-        .where(id: revision.id, taxonomy_status: CLAIMABLE_STATUSES)
+        .where(id: revision.id, review_status: non_approved_review_statuses, taxonomy_status: CLAIMABLE_STATUSES)
         .update_all(
           taxonomy_status: ResourceRevision.taxonomy_statuses.fetch("processing"),
           taxonomy_input_sha256: input_sha256,
@@ -92,11 +92,15 @@ module Taxonomy
 
     def mark_failed
       ResourceRevision
-        .where(id: revision.id)
+        .where(id: revision.id, review_status: non_approved_review_statuses)
         .update_all(
           taxonomy_status: ResourceRevision.taxonomy_statuses.fetch("failed"),
           updated_at: Time.current
         )
+    end
+
+    def non_approved_review_statuses
+      ResourceRevision.review_statuses.except("approved").values
     end
   end
 end
