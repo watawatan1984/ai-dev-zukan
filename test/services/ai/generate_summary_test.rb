@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Ai::GenerateSummaryTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   FakeSummarizer = Struct.new(:result) do
     def call(title:, source_excerpt:)
       raise "missing title" if title.blank?
@@ -10,7 +12,7 @@ class Ai::GenerateSummaryTest < ActiveSupport::TestCase
     end
   end
 
-  test "stores structured AI output and moves the revision to review pending" do
+  test "stores summary output, leaves taxonomy values untouched, and queues classification" do
     resource = Resource.create!(
       kind: :mcp,
       slug: "example-mcp",
@@ -31,22 +33,26 @@ class Ai::GenerateSummaryTest < ActiveSupport::TestCase
       summary: "GitHub Issueの調査を効率化するMCPです。",
       capabilities: [ "Issue検索", "一覧化" ],
       key_points: [ "GitHubトークンが必要" ],
-      suggested_category_slug: "developer-tools",
-      suggested_tag_slugs: [ "github", "mcp" ],
       provider: "nvidia",
       model: "test-model",
       prompt_version: "v1",
       basis: "README excerpt"
     )
 
-    Ai::GenerateSummary.call(revision: revision, summarizer: FakeSummarizer.new(result))
+    assert_enqueued_jobs 1, only: ClassifyRevisionJob do
+      Ai::GenerateSummary.call(revision: revision, summarizer: FakeSummarizer.new(result))
+    end
 
     revision.reload
     assert revision.summary_status_succeeded?
+    assert revision.taxonomy_status_queued?
     assert revision.review_pending?
     assert_equal result.summary, revision.ai_summary
     assert_equal result.capabilities, revision.capabilities
     assert_equal result.key_points, revision.key_points
+    assert_nil revision.suggested_category_slug
+    assert_equal [], revision.suggested_category_slugs
+    assert_equal [], revision.suggested_tag_slugs
     assert_equal "nvidia", revision.ai_provider
     assert_equal "test-model", revision.ai_model
     assert revision.summary_generated_at.present?

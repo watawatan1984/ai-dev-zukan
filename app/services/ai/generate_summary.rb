@@ -21,8 +21,6 @@ module Ai
         ai_summary: result.summary,
         capabilities: result.capabilities,
         key_points: result.key_points,
-        suggested_category_slug: result.suggested_category_slug,
-        suggested_tag_slugs: result.suggested_tag_slugs,
         ai_provider: result.provider,
         ai_model: result.model,
         prompt_version: result.prompt_version,
@@ -30,8 +28,10 @@ module Ai
         summary_input_sha256: Digest::SHA256.hexdigest(revision.source_excerpt.to_s),
         summary_generated_at: Time.current,
         summary_status: :succeeded,
+        taxonomy_status: :queued,
         review_status: :review_pending
       )
+      ClassifyRevisionJob.perform_later(revision.id)
       revision
     rescue StandardError
       revision.update_column(:summary_status, ResourceRevision.summary_statuses.fetch("failed")) if revision.persisted?

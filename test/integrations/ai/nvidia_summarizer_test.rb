@@ -21,9 +21,7 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
                 content: {
                   summary: "GitHub操作を効率化します。",
                   capabilities: [ "Issue検索" ],
-                  key_points: [ "トークンが必要" ],
-                  suggested_category_slug: "developer-tools",
-                  suggested_tag_slugs: [ "github" ]
+                  key_points: [ "トークンが必要" ]
                 }.to_json
               }
             } ]
@@ -77,7 +75,7 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
       stub.post("/v1/chat/completions") do
         content = <<~CONTENT
           Here is the requested result.
-          {"summary":"要約です。","capabilities":[],"key_points":[],"suggested_category_slug":"ai","suggested_tag_slugs":[]}
+          {"summary":"要約です。","capabilities":[],"key_points":[]}
         CONTENT
 
         [
@@ -110,8 +108,8 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
           summary: "長" * 300,
           capabilities: [ "機能" * 150 ],
           key_points: [],
-          suggested_category_slug: "ai",
-          suggested_tag_slugs: []
+          ignored_legacy_category_slug: "ai",
+          ignored_legacy_tag_slugs: []
         }
         [ 200, { "Content-Type" => "application/json" }, { choices: [ { message: { content: payload.to_json } } ] }.to_json ]
       end
@@ -160,6 +158,34 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
     result = summarizer.call(title: "Title", source_excerpt: "Excerpt")
 
     assert_equal "nvidia/numbered-model", result.model
+    stubs.verify_stubbed_calls
+  end
+
+  test "new requests do not ask the summary model for taxonomy fields" do
+    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.post("/v1/chat/completions") do |request|
+        body = JSON.parse(request.body)
+        user_content = body.dig("messages", 1, "content")
+        refute_includes user_content, "suggested_category_slug"
+        refute_includes user_content, "suggested_tag_slugs"
+        refute_includes user_content, "category_slugs"
+        refute_includes user_content, "tag_slugs"
+
+        [ 200, { "Content-Type" => "application/json" }, { choices: [ { message: { content: { summary: "要約" }.to_json } } ] }.to_json ]
+      end
+    end
+    connection = Faraday.new(url: "https://integrate.api.nvidia.com") do |faraday|
+      faraday.adapter :test, stubs
+    end
+    summarizer = Ai::NvidiaSummarizer.new(
+      api_key: "test-key",
+      model: "vendor/model-under-test",
+      endpoint: "/v1/chat/completions",
+      connection:
+    )
+
+    summarizer.call(title: "Title", source_excerpt: "Excerpt")
+
     stubs.verify_stubbed_calls
   end
 end

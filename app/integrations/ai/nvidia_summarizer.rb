@@ -73,7 +73,7 @@ module Ai
               #{{ title:, source_excerpt: source_excerpt.to_s.truncate(12_000) }.to_json}
 
               JSON schema:
-              {"summary":"180文字以内", "capabilities":["最大5件"], "key_points":["注意点を最大5件"], "suggested_category_slug":"英小文字slug", "suggested_tag_slugs":["最大5件のslug"]}
+              {"summary":"180文字以内", "capabilities":["最大5件"], "key_points":["注意点を最大5件"]}
             PROMPT
           }
         ]
@@ -98,8 +98,6 @@ module Ai
         summary: bounded_text(payload.fetch("summary"), 180),
         capabilities: bounded_list(payload["capabilities"]),
         key_points: bounded_list(payload["key_points"]),
-        suggested_category_slug: bounded_text(payload["suggested_category_slug"], 80).presence,
-        suggested_tag_slugs: bounded_list(payload["suggested_tag_slugs"], limit: 80),
         provider: "nvidia",
         model: model,
         prompt_version: PROMPT_VERSION,

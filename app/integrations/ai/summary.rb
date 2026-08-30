@@ -3,8 +3,6 @@ module Ai
     :summary,
     :capabilities,
     :key_points,
-    :suggested_category_slug,
-    :suggested_tag_slugs,
     :provider,
     :model,
     :prompt_version,
