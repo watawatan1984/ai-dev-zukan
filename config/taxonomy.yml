@@ -399,6 +399,20 @@ tags:
     active: true
     filterable: false
     aliases: []
+  - slug: learning
+    name: Learning
+    group: technique_architecture
+    position: 105
+    active: true
+    filterable: true
+    aliases: [education, study]
+  - slug: productivity
+    name: Productivity
+    group: technique_architecture
+    position: 106
+    active: true
+    filterable: true
+    aliases: [personal-productivity, work-productivity]
   - slug: api-integration
     name: API Integration
     group: technique_architecture

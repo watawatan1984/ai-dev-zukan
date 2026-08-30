@@ -4,7 +4,7 @@ module Ai
     class ProviderError < StandardError; end
 
     ENDPOINT = Ai::NvidiaSummarizer::ENDPOINT
-    PROMPT_VERSION = "catalog-taxonomy-v2.1".freeze
+    PROMPT_VERSION = "catalog-taxonomy-v2.3".freeze
 
     def initialize(
       api_key: nil,
@@ -76,9 +76,10 @@ module Ai
               #{classification_basis(revision).to_json}
 
               Selection rules:
-              - Do not use a tag that restates the resource kind.
-              - For kind=mcp, do not include tag_slug "mcp".
-              - For kind=skill, do not include tag_slug "agent-skills".
+              - Do not use a tag that restates the resource kind. Content-type tags are forbidden when they only repeat what the resource already is.
+              - If classification_basis_json.kind is "mcp", tag_slug "mcp" is invalid. Choose tags for what the server connects to or does, such as github, api-integration, web, data-analysis, document-processing, security, or cloud.
+              - If classification_basis_json.kind is "skill", tag_slug "agent-skills" is invalid. Choose tags for what the skill helps users do, such as code-review, testing, debugging, document-processing, productivity, learning, or workflow-automation.
+              - For blog/article resources, "mcp" and "agent-skills" are allowed only when the article topic is specifically about those concepts.
               - Prefer tags that describe language, platform, tool, technique, or runtime.
 
               JSON schema:
@@ -94,6 +95,7 @@ module Ai
     def classification_basis(revision)
       {
         title: revision.title,
+        kind: revision.resource.kind,
         source_excerpt: revision.source_excerpt.to_s.truncate(12_000),
         summary: revision.ai_summary.to_s,
         capabilities: Array(revision.capabilities),
@@ -115,7 +117,7 @@ module Ai
 
       suggestion = Ai::TaxonomySuggestion.new(
         category_slugs: bounded_slug_list(payload.fetch("category_slugs"), "category_slugs"),
-        tag_slugs: normalized_tag_slugs(revision, payload.fetch("tag_slugs")),
+        tag_slugs: bounded_slug_list(payload.fetch("tag_slugs"), "tag_slugs"),
         search_keywords: bounded_search_keywords(payload.fetch("search_keywords")),
         confidence: confidence.to_f,
         provider: "nvidia",
@@ -123,7 +125,9 @@ module Ai
         prompt_version: PROMPT_VERSION
       )
       validation = Taxonomy::ValidateSuggestion.call(revision: validation_revision(revision, suggestion))
-      raise ProviderError, "NVIDIA NIM returned invalid taxonomy suggestion" unless validation.valid?
+      unless validation.valid?
+        raise ProviderError, "NVIDIA NIM returned invalid taxonomy suggestion: #{validation.errors.join('; ')}"
+      end
 
       suggestion.with(
         category_slugs: validation.category_slugs,
@@ -147,13 +151,6 @@ module Ai
       raise ProviderError, "NVIDIA NIM taxonomy JSON #{field} must be an array" unless values.is_a?(Array)
 
       Array(values).filter_map { |value| value.to_s.unicode_normalize(:nfkc).strip.downcase.presence }
-    end
-
-    def normalized_tag_slugs(revision, values)
-      bounded_slug_list(values, "tag_slugs").reject do |slug|
-        (revision.resource.kind_mcp? && slug == "mcp") ||
-          (revision.resource.kind_skill? && slug == "agent-skills")
-      end
     end
 
     def bounded_search_keywords(values)

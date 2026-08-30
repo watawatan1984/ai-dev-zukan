@@ -24,8 +24,9 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
         user_content = request.dig("messages", 1, "content")
         assert_includes user_content, "taxonomy_registry_json"
         assert_includes user_content, "classification_basis_json"
-        assert_includes user_content, "For kind=mcp, do not include tag_slug \"mcp\""
-        assert_includes user_content, "For kind=skill, do not include tag_slug \"agent-skills\""
+        assert_includes user_content, "tag_slug \"mcp\" is invalid"
+        assert_includes user_content, "tag_slug \"agent-skills\" is invalid"
+        assert_includes user_content, "\"kind\":\"zenn_article\""
         assert_includes user_content, "Solid Queue Guide"
         assert_includes user_content, Taxonomy::Registry.version
         refute_includes user_content, "canonical_url"
@@ -67,7 +68,7 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
     assert_equal 0.92, result.confidence
     assert_equal "nvidia", result.provider
     assert_equal "nvidia/nemotron-3-ultra-test", result.model
-    assert_equal "catalog-taxonomy-v2.1", result.prompt_version
+    assert_equal "catalog-taxonomy-v2.3", result.prompt_version
     stubs.verify_stubbed_calls
   end
 
@@ -86,7 +87,7 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
     assert_provider_error_for(content)
   end
 
-  test "drops redundant kind tags returned by the provider before validation" do
+  test "rejects redundant kind tags returned by the provider" do
     resource = Resource.create!(
       kind: :skill,
       slug: "skill-kind-tag-#{SecureRandom.hex(6)}",
@@ -128,14 +129,17 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
       faraday.adapter :test, stubs
     end
 
-    result = Ai::NvidiaTaxonomizer.new(
-      api_key: "test-key",
-      model: "vendor/model-under-test",
-      endpoint: "/v1/chat/completions",
-      connection:
-    ).call(revision:)
+    error = assert_raises(Ai::NvidiaTaxonomizer::ProviderError) do
+      Ai::NvidiaTaxonomizer.new(
+        api_key: "test-key",
+        model: "vendor/model-under-test",
+        endpoint: "/v1/chat/completions",
+        connection:
+      ).call(revision:)
+    end
 
-    assert_equal [ "ai-agents", "github" ], result.tag_slugs
+    assert_includes error.message, "NVIDIA NIM returned invalid taxonomy suggestion"
+    assert_includes error.message, "tag restates content type: agent-skills"
   end
 
   test "rejects malformed json and out of range confidence" do

@@ -85,12 +85,15 @@ ADMIN_EMAIL=release-bot@ai-dev-zukan.invalid CONFIRM=publish bin/rails catalog:b
 ```powershell
 docker compose run --rm web ruby bin/rails catalog:taxonomy:sync
 docker compose run --rm web ruby bin/rails catalog:taxonomy:enqueue
-docker compose run --rm -e NVIDIA_API_KEY -e NVIDIA_NIM_MODEL web ruby bin/rails runner "ResourceRevision.where(review_status: :draft, taxonomy_status: [:queued, :failed]).find_each { |revision| ClassifyRevisionJob.perform_now(revision.id) }"
+docker compose run --rm web ruby bin/rails runner "fingerprints=Resource.publicly_visible.includes(:current_revision).map { |resource| Digest::SHA256.hexdigest([resource.current_revision.source_fingerprint, 'taxonomy-v2'].join(':')) }; File.write('tmp/taxonomy_candidate_ids.txt', ResourceRevision.where(source_fingerprint: fingerprints).order(:id).pluck(:id).join(','))"
+docker compose run --rm -e NVIDIA_API_KEY -e NVIDIA_NIM_MODEL web ruby bin/rails runner "ids=File.read('tmp/taxonomy_candidate_ids.txt').split(',').map(&:to_i); ResourceRevision.where(id: ids, taxonomy_status: [:queued, :failed]).order(:id).find_each { |revision| revision.update!(taxonomy_status: :queued) if revision.taxonomy_status_failed?; ClassifyRevisionJob.perform_now(revision.id) }"
 docker compose run --rm web ruby bin/rails catalog:taxonomy:export_review TAXONOMY_REVIEW_PATH=db/seed_data/taxonomy_review.json
 docker compose run --rm web ruby bin/rails catalog:taxonomy:report TAXONOMY_REVIEW_PATH=db/seed_data/taxonomy_review.json
 docker compose run --rm -e CONFIRM=publish-taxonomy-v2 web ruby bin/rails catalog:taxonomy:publish TAXONOMY_REVIEW_PATH=db/seed_data/taxonomy_review.json
 docker compose run --rm web ruby bin/rails catalog:snapshot:export INITIAL_CATALOG_SNAPSHOT=db/seed_data/initial_catalog.json BOOTSTRAP_PER_KIND=100
 ```
+
+AI分類runnerは`catalog:taxonomy:enqueue`直後に作成されたtaxonomy-v2候補fingerprintからIDセットを固定し、そのIDだけを処理する。`ResourceRevision.where(review_status: :draft, taxonomy_status: ...)`のような全体条件では、管理画面で作成した無関係なdraftやfailed candidateを巻き込むため使用しない。retryも同じIDセット内の`queued`/`failed`だけに限定する。
 
 `taxonomy_review.json`の必須キーは`format`、`version`、`taxonomy_version`、`generated_at`、`records_sha256`、`records`。各recordは`resource_id`、`kind`、`title`、`category_slugs`、`tag_slugs`、`confidence`、`required_review`、`category_match`、`tag_match`、`review_note`を持つ。`category_match`と`tag_match`は必ず真偽値にする。低信頼度、失敗、検証不能な候補は`required_review: true`になり、全件レビュー必須。
 
@@ -101,10 +104,10 @@ rollbackは削除ではなく読み取り経路のrevertで行う。アプリを
 ## 主要な運用確認
 
 ```powershell
-docker compose run --rm -e RAILS_ENV=test web bin/rails test
-docker compose run --rm web bin/rubocop
-docker compose run --rm web bin/brakeman --no-pager
-docker compose run --rm web bin/bundler-audit check --update
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test
+docker compose run --rm web bundle exec rubocop
+docker compose run --rm web bundle exec brakeman --no-pager
+docker compose run --rm web bundle exec bundler-audit check --update
 ```
 
 本番では`/up`、管理ダッシュボードのImportRun、ScheduledExecution、Solid Queue失敗ジョブ、Render logsを確認する。
