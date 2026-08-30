@@ -17,9 +17,6 @@
 
 <aside class="filter-panel"
   data-facet-filter-target="panel"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="filters-title"
   aria-hidden="true">
   <button type="button" class="filter-backdrop" aria-label="絞り込みを閉じる" data-action="facet-filter#close"></button>
 
@@ -27,7 +24,7 @@
     <div class="panel-heading">
       <div>
         <p class="eyebrow">FILTER</p>
-        <h2 id="filters-title">絞り込み</h2>
+        <h2 id="filters-title" tabindex="-1" data-facet-filter-target="initialFocus">絞り込み</h2>
       </div>
       <button type="button" class="icon-button mobile-sheet-close" data-action="facet-filter#close">閉じる</button>
     </div>
@@ -63,7 +60,8 @@
                     selection.sources.include?(slug),
                     id: "source-#{slug}",
                     form: form_id,
-                    data: { action: "facet-filter#selectionChanged" } %>
+                    disabled: !selection.content_types.include?("blog"),
+                    data: { facet_filter_target: "sourceInput", action: "facet-filter#selectionChanged" } %>
               <span><%= label %><small><%= number_with_delimiter(source_counts.fetch(slug, 0)) %></small></span>
             </label>
           <% end %>

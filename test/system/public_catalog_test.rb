@@ -41,9 +41,10 @@ class PublicCatalogTest < ApplicationSystemTestCase
     visit resources_path
 
     assert_selector "[data-filter-actions]", visible: true
+    assert_no_selector ".filter-panel[role='dialog']", visible: true
 
-    find("#content-type-mcp", visible: :all).check
-    find("#tag-ruby", visible: :all).check
+    find("label", text: "MCP").send_keys(:space)
+    find("label", text: "Ruby").send_keys(:space)
     click_on "適用する"
 
     assert_current_path resources_path, ignore_query: true
@@ -55,16 +56,20 @@ class PublicCatalogTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     visit resources_path
 
+    opener = find_button("絞り込み")
+    opener.native.focus
     click_on "絞り込み"
     assert_selector "[role='dialog'][aria-modal='true']", visible: true
+    assert_equal "filters-title", page.evaluate_script("document.activeElement.id")
+    assert page.evaluate_script("document.body.classList.contains('filter-sheet-open')")
 
     fill_in "タグを検索", with: "Rails"
     assert_selector "[data-tag-option]", text: "Ruby on Rails", visible: true
     assert_no_selector "[data-tag-option]", text: "Python", visible: true
 
-    find("#content-type-blog", visible: :all).check
+    find("label", text: "Blog").send_keys(:space)
     assert_selector "[data-source-filter]", visible: true
-    find("#source-zenn", visible: :all).check
+    find("label", text: "Zenn").send_keys(:space)
     assert_selector "[data-mobile-filter-actions]", visible: true
     click_on "結果を見る"
 
@@ -74,6 +79,32 @@ class PublicCatalogTest < ApplicationSystemTestCase
     click_on "絞り込み"
     assert_selector "[role='dialog'][aria-modal='true']", visible: true
     find("body").send_keys(:escape)
+    assert_no_selector "[role='dialog'][aria-modal='true']", visible: true
+    assert_equal "絞り込み", page.evaluate_script("document.activeElement.textContent.trim()")
+    assert_not page.evaluate_script("document.body.classList.contains('filter-sheet-open')")
+  end
+
+  test "mobile backdrop closes and hidden source checkboxes are not submitted" do
+    page.current_window.resize_to(390, 844)
+    visit resources_path(content_types: [ "blog" ], sources: [ "zenn" ])
+
+    click_on "絞り込み"
+    assert_selector "[role='dialog'][aria-modal='true']", visible: true
+    assert_selector "#source-zenn", checked: true, visible: :all
+
+    find("label", text: "Blog").send_keys(:space)
+    assert page.has_css?("[data-source-filter][hidden]", visible: :all)
+    assert page.evaluate_script("document.querySelector('#source-zenn').disabled")
+    assert_text "0件選択中"
+
+    click_on "結果を見る"
+
+    assert_current_path resources_path, ignore_query: true
+    assert_no_current_path(/sources/)
+
+    click_on "絞り込み"
+    assert_selector "[role='dialog'][aria-modal='true']", visible: true
+    find(".filter-backdrop", visible: :all).click
     assert_no_selector "[role='dialog'][aria-modal='true']", visible: true
   end
 

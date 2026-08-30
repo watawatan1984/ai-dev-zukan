@@ -134,12 +134,26 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     get resources_path
 
     assert_response :success
+    assert_select ".filter-panel[role]", count: 0
+    assert_select ".filter-panel[aria-modal]", count: 0
     assert_select "[data-source-filter][hidden]"
+    assert_select "[data-source-filter] input[name='sources[]'][disabled='disabled']", 2
+    assert_select "[data-facet-filter-target='selectionCount']", text: "0件選択中"
 
     get resources_path, params: { content_types: [ "blog" ] }
 
     assert_response :success
     assert_select "[data-source-filter]:not([hidden])"
+    assert_select "[data-source-filter] input[name='sources[]'][disabled='disabled']", count: 0
+  end
+
+  test "source params do not render as active selections without blog" do
+    get resources_path, params: { sources: [ "zenn" ] }
+
+    assert_response :success
+    assert_select "[data-source-filter][hidden]"
+    assert_select "input[name='sources[]'][value='zenn'][checked='checked']", count: 0
+    assert_select "[data-active-filters]", count: 0
   end
 
   private

@@ -1,7 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["panel", "openButton", "sourceFilter", "contentType", "tagSearch", "selectionCount"]
+  static targets = [
+    "panel",
+    "openButton",
+    "sourceFilter",
+    "sourceInput",
+    "contentType",
+    "tagSearch",
+    "selectionCount",
+    "initialFocus",
+  ]
 
   connect() {
     this.boundEscape = this.handleEscape.bind(this)
@@ -23,20 +32,22 @@ export default class extends Controller {
     event.preventDefault()
     this.lastFocusedElement = document.activeElement
     this.panelTarget.classList.add("is-open")
+    this.panelTarget.setAttribute("role", "dialog")
+    this.panelTarget.setAttribute("aria-modal", "true")
+    this.panelTarget.setAttribute("aria-labelledby", "filters-title")
     this.panelTarget.setAttribute("aria-hidden", "false")
     document.body.classList.add("filter-sheet-open")
     document.addEventListener("keydown", this.boundEscape)
 
     requestAnimationFrame(() => {
-      const firstInput = this.panelTarget.querySelector("input, select, button, a")
-      firstInput?.focus()
+      this.initialFocusTarget.focus()
     })
   }
 
   close(event) {
     event?.preventDefault()
     this.panelTarget.classList.remove("is-open")
-    this.panelTarget.setAttribute("aria-hidden", "true")
+    this.deactivateDialog()
     document.body.classList.remove("filter-sheet-open")
     document.removeEventListener("keydown", this.boundEscape)
     this.lastFocusedElement?.focus()
@@ -69,10 +80,13 @@ export default class extends Controller {
   updateSourceVisibility() {
     const blogSelected = this.contentTypeTargets.some((input) => input.value === "blog" && input.checked)
     this.sourceFilterTarget.hidden = !blogSelected
+    this.sourceInputTargets.forEach((input) => {
+      input.disabled = !blogSelected
+    })
   }
 
   updateSelectionCount() {
-    const checkedCount = this.panelTarget.querySelectorAll("input[type='checkbox']:checked").length
+    const checkedCount = this.panelTarget.querySelectorAll("input[type='checkbox']:checked:not(:disabled)").length
     const periodSelected = this.panelTarget.querySelector("select[name='period']")?.value
     const sortSelected = this.panelTarget.querySelector("select[name='sort']")?.value
     let count = checkedCount
@@ -85,10 +99,17 @@ export default class extends Controller {
 
   syncPanelMode() {
     if (this.mediaQuery.matches) {
-      this.panelTarget.setAttribute("aria-hidden", "false")
+      this.deactivateDialog({ visible: true })
       document.body.classList.remove("filter-sheet-open")
     } else if (!this.panelTarget.classList.contains("is-open")) {
-      this.panelTarget.setAttribute("aria-hidden", "true")
+      this.deactivateDialog()
     }
+  }
+
+  deactivateDialog({ visible = false } = {}) {
+    this.panelTarget.removeAttribute("role")
+    this.panelTarget.removeAttribute("aria-modal")
+    this.panelTarget.removeAttribute("aria-labelledby")
+    this.panelTarget.setAttribute("aria-hidden", visible ? "false" : "true")
   }
 }
