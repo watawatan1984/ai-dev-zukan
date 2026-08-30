@@ -18,22 +18,16 @@ class Sources::GithubCatalogTest < ActiveSupport::TestCase
 
 
   class MultiQueryClient
-    attr_reader :readme_calls, :queries
-
     def initialize(results)
       @results = results
-      @readme_calls = []
-      @queries = []
     end
 
     def search_repositories(query:, limit:, page: 1)
-      queries << query
       raise "page missing" unless page.positive?
       @results.fetch(query).first(limit)
     end
 
     def readme(full_name:)
-      readme_calls << full_name
       "README for #{full_name}"
     end
   end
@@ -44,7 +38,7 @@ class Sources::GithubCatalogTest < ActiveSupport::TestCase
       "name" => "issue-mcp",
       "full_name" => "example/issue-mcp",
       "html_url" => "https://github.com/example/issue-mcp",
-      "description" => "Search GitHub issues",
+      "description" => "MCP server for searching GitHub issues",
       "owner" => { "login" => "example" },
       "created_at" => "2026-01-02T03:04:05Z",
       "pushed_at" => "2026-08-20T11:12:13Z",
@@ -71,6 +65,7 @@ class Sources::GithubCatalogTest < ActiveSupport::TestCase
       "name" => "issue-mcp",
       "full_name" => "example/issue-mcp",
       "html_url" => "https://github.com/example/issue-mcp",
+      "description" => "MCP server for searching GitHub issues",
       "owner" => { "login" => "example" },
       "pushed_at" => "2026-08-20T11:12:13Z",
       "stargazers_count" => 321
@@ -91,9 +86,9 @@ class Sources::GithubCatalogTest < ActiveSupport::TestCase
 
   test "merges configured searches, removes duplicates, and limits README requests" do
     first_query, second_query = Sources::GithubCatalog::QUERIES.fetch(:skill)
-    shared = repository("shared/skill", stars: 300)
-    first_only = repository("first/skill", stars: 200)
-    second_only = repository("second/skill", stars: 100)
+    shared = repository("shared/skill", stars: 300).merge("description" => "Agent Skills for coding agents")
+    first_only = repository("first/skill", stars: 200).merge("description" => "Agent Skills for coding agents")
+    second_only = repository("second/skill", stars: 100).merge("description" => "Agent Skills for coding agents")
     client = MultiQueryClient.new(
       first_query => [ shared, first_only ],
       second_query => [ shared, second_only ]
@@ -108,27 +103,86 @@ class Sources::GithubCatalogTest < ActiveSupport::TestCase
 
     assert_equal 3, snapshots.length
     assert_equal [ "shared/skill", "first/skill", "second/skill" ], snapshots.map(&:external_uid)
-    assert_equal [ "shared/skill" ], client.readme_calls
-    assert_includes snapshots.second.excerpt, "Repository description"
+    assert_equal "README for shared/skill", snapshots.first.excerpt
+    assert_includes snapshots.second.excerpt, "Agent Skills for coding agents"
     assert_includes snapshots.second.excerpt, "Ruby"
   end
 
   test "keeps MCP server repositories and rejects adjacent MCP clients and SDKs" do
-    catalog = Sources::GithubCatalog.new(kind: :mcp, client: FakeClient.new([], nil))
+    first_query, second_query = Sources::GithubCatalog::QUERIES.fetch(:mcp)
+    server = repository("github/github-mcp-server", stars: 100).merge(
+      "description" => "Official Model Context Protocol server for GitHub"
+    )
+    official = repository("modelcontextprotocol/servers", stars: 90)
+    client = MultiQueryClient.new(
+      first_query => [
+        server,
+        official,
+        repository("modelcontextprotocol/mcp-client", stars: 80),
+        repository("tadata-org/fastapi_mcp", stars: 75).merge(
+          "description" => "Expose your FastAPI endpoints as Model Context Protocol (MCP) tools"
+        )
+      ],
+      second_query => [
+        repository("modelcontextprotocol/python-sdk", stars: 70),
+        repository("mark3labs/mcp-go", stars: 60).merge(
+          "description" => "A Go implementation of the Model Context Protocol"
+        ),
+        repository("lastmile-ai/mcp-agent", stars: 50).merge(
+          "description" => "Build agents using Model Context Protocol"
+        )
+      ]
+    )
 
-    assert catalog.send(:relevant_repository?, repository("github/github-mcp-server", stars: 100))
-    assert catalog.send(:relevant_repository?, repository("modelcontextprotocol/servers", stars: 90))
-    refute catalog.send(:relevant_repository?, repository("n8n-io/n8n", stars: 80))
-    refute catalog.send(:relevant_repository?, repository("google-gemini/gemini-cli", stars: 70))
-    refute catalog.send(:relevant_repository?, repository("modelcontextprotocol/python-sdk", stars: 60))
+    snapshots = Sources::GithubCatalog.new(kind: :mcp, client:, readme_limit: 0).fetch(limit: 10)
+
+    assert_equal [ "github/github-mcp-server", "modelcontextprotocol/servers" ], snapshots.map(&:external_uid)
   end
 
   test "requires an explicit skill signal for skill repositories" do
-    catalog = Sources::GithubCatalog.new(kind: :skill, client: FakeClient.new([], nil))
+    first_query, second_query = Sources::GithubCatalog::QUERIES.fetch(:skill)
     skill = repository("example/humanizer", stars: 100).merge("description" => "A Claude Code skill")
+    package_manager_audit = repository("example/npm-security", stars: 95).merge(
+      "description" => "Claude Code skill for npm package manager security audits"
+    )
+    collection = repository("example/agent-skills", stars: 90)
+    client = MultiQueryClient.new(
+      first_query => [ skill, package_manager_audit, collection, repository("googleworkspace/cli", stars: 80).merge(
+        "description" => "A command-line tool with Agent Skills"
+      ), repository("example/skills-hub", stars: 70).merge(
+        "description" => "A desktop app to manage and sync Agent Skills"
+      ), repository("example/awesome-agent-skills", stars: 65).merge(
+        "description" => "A curated list of awesome Agent Skills and directories"
+      ) ],
+      second_query => [
+        repository("example/reactive-resume", stars: 60),
+        repository("agentskills/agentskills", stars: 50).merge(
+          "description" => "Specification and documentation for Agent Skills"
+        ),
+        repository("example/ai-agent-skills", stars: 40).merge(
+          "description" => "Universal skill installer and package manager for AI coding agents"
+        ),
+        repository("example/agent-skill-package-manager", stars: 35).merge(
+          "description" => "Educational package-manager project for AI agent skills. Not actively maintained."
+        ),
+        repository("example/agent-skills-eval", stars: 30).merge(
+          "description" => "A test runner for agentskills.io-style AI agent skills"
+        ),
+        repository("example/awesome-nlp-resources", stars: 20).merge(
+          "description" => "A curated list of resources for NLP. Includes Claude Code skills to search resources."
+        ),
+        repository("example/hot-monitor", stars: 10).merge(
+          "description" => "AI monitoring web application with crawling, email and dashboards that also packages its monitoring feature as Agent Skills"
+        ),
+        repository("example/human-skill-tree", stars: 5).merge(
+          "description" => "AI-Powered Skill Tree for Lifelong Human Learning"
+        )
+      ]
+    )
 
-    assert catalog.send(:relevant_repository?, skill)
-    refute catalog.send(:relevant_repository?, repository("example/reactive-resume", stars: 90))
+    snapshots = Sources::GithubCatalog.new(kind: :skill, client:, readme_limit: 0).fetch(limit: 10)
+
+    assert_equal [ "example/humanizer", "example/npm-security", "example/agent-skills" ], snapshots.map(&:external_uid)
   end
 
   private

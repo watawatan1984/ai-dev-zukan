@@ -28,9 +28,11 @@ Qiitaは公式API、ZennはRSS、GitHubは公式REST APIを利用する。記事
 
 初期カタログはMCP・Skills・Zenn・Qiitaを各100件収集する。GitHubは関連topicのスター順、Qiitaは検索条件を満たす記事、ZennはトレンドとAI・主要言語・Web開発トピックの公式RSSをラウンドロビンで取得する。取得結果は正規化URLと外部IDで重複排除し、NVIDIA NIMのモデル名・プロンプト版・入力ハッシュを要約Revisionへ記録する。
 
-MCPは単にMCPへ対応するクライアントやSDKを混在させず、リポジトリ名がMCPサーバー実装を示す候補へ限定する。自動候補の境界事例は管理者レビュー対象とし、除外時は削除せずアーカイブする。
+MCPは単にMCPへ対応するクライアントやSDKを混在させず、リポジトリ名にMCPがあり、名称・説明・専用topicのいずれかがサーバー実装を明示する候補へ限定する。client、SDK、framework、library、proxy、router、adapter、bridgeは除外し、境界事例は管理者レビュー対象とする。除外時は削除せずアーカイブする。
 
-SkillsはGitHub topicだけで採用せず、リポジトリ名または説明に`skill` / `SKILL.md`が明示された候補へ限定する。汎用アプリがAgent Skills topicを持つだけの場合は初期候補から除外する。
+SkillsはGitHub topicだけで採用せず、名称が複数Skillsの配布を示すか、説明の先頭でAgent Skill / Claude Code Skill / Codex Skill / `SKILL.md`が明示された候補へ限定する。単数`skill`という名前だけでは採用しない。Skillのbuilder、scanner、recorder、評価runner、管理アプリ、仕様書、リンク集・directoryなど、単体または複数のSkill本体を配布しないRepositoryは初期候補から除外する。
+
+検証済み初期カタログはAPIキーを含まないチェックサム付きArtifactとしてRepositoryへ同梱する。Renderの一回限りの初期デプロイhookはこれをNeonへ冪等投入するが、Revisionはレビュー待ちのまま維持し、自動公開しない。
 
 ## デプロイ制約
 

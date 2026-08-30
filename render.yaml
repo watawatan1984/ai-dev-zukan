@@ -4,6 +4,7 @@ services:
     runtime: docker
     plan: free
     healthCheckPath: /up
+    initialDeployHook: bin/rails db:prepare catalog:snapshot:import
     autoDeployTrigger: checksPass
     envVars:
       - key: APP_HOST

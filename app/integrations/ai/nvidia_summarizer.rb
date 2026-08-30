@@ -59,7 +59,7 @@ module Ai
         model: model,
         stream: false,
         temperature: 0.2,
-        max_tokens: 700,
+        max_tokens: model.start_with?("openai/gpt-oss") ? 1_600 : 700,
         messages: [
           {
             role: "system",

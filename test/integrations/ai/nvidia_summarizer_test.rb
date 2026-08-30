@@ -52,7 +52,9 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
   test "omits Nemotron specific reasoning controls for other models" do
     stubs = Faraday::Adapter::Test::Stubs.new do |stub|
       stub.post("/v1/chat/completions") do |request|
-        refute JSON.parse(request.body).key?("reasoning_effort")
+        body = JSON.parse(request.body)
+        refute body.key?("reasoning_effort")
+        assert_equal 1_600, body.fetch("max_tokens")
         [ 200, { "Content-Type" => "application/json" }, { choices: [ { message: { content: { summary: "要約" }.to_json } } ] }.to_json ]
       end
     end
