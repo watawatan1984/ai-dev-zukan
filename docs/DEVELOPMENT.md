@@ -7,6 +7,8 @@
 
 ホストOSへのRuby、PostgreSQL、Node.jsのインストールは不要。
 
+プロジェクト直下の`env`は任意のローカル機密ファイルとしてDocker Composeが読み込む。Gitでは除外される。NVIDIA設定は標準名`NVIDIA_API_KEY` / `NVIDIA_NIM_MODEL`を優先し、未定義の場合は`NVIDIA_API_KEY1` / `NVIDIA_AI_MODEL1`を主設定として利用する。番号2以降は自動ローテーションせず、Renderへ登録するキーは明示的に1本を選ぶ。
+
 ## 起動
 
 ```powershell

@@ -45,4 +45,35 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
     assert_equal "vendor/model-under-test", result.model
     stubs.verify_stubbed_calls
   end
+
+  test "accepts the numbered primary credentials from the local env file" do
+    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.post("/v1/chat/completions") do |request|
+        assert_equal "Bearer numbered-key", request.request_headers.fetch("Authorization")
+        assert_equal "nvidia/numbered-model", JSON.parse(request.body).fetch("model")
+
+        [
+          200,
+          { "Content-Type" => "application/json" },
+          { choices: [ { message: { content: { summary: "要約" }.to_json } } ] }.to_json
+        ]
+      end
+    end
+    connection = Faraday.new(url: "https://integrate.api.nvidia.com") do |faraday|
+      faraday.adapter :test, stubs
+    end
+    summarizer = Ai::NvidiaSummarizer.new(
+      endpoint: "/v1/chat/completions",
+      connection: connection,
+      environment: {
+        "NVIDIA_API_KEY1" => "numbered-key",
+        "NVIDIA_AI_MODEL1" => "nvidia/numbered-model"
+      }
+    )
+
+    result = summarizer.call(title: "Title", source_excerpt: "Excerpt")
+
+    assert_equal "nvidia/numbered-model", result.model
+    stubs.verify_stubbed_calls
+  end
 end

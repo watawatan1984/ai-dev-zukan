@@ -7,7 +7,10 @@ services:
     autoDeployTrigger: checksPass
     envVars:
       - key: APP_HOST
-        sync: false
+        fromService:
+          type: web
+          name: ai-dev-zukan
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
       - key: RAILS_MASTER_KEY
         sync: false
       - key: SECRET_KEY_BASE

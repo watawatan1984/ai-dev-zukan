@@ -7,14 +7,15 @@ module Ai
     PROMPT_VERSION = "catalog-summary-v1".freeze
 
     def initialize(
-      api_key: ENV["NVIDIA_API_KEY"],
-      model: ENV["NVIDIA_NIM_MODEL"],
-      endpoint: ENV.fetch("NVIDIA_NIM_ENDPOINT", ENDPOINT),
-      connection: nil
+      api_key: nil,
+      model: nil,
+      endpoint: nil,
+      connection: nil,
+      environment: ENV
     )
-      @api_key = api_key
-      @model = model
-      @endpoint = endpoint
+      @api_key = api_key.presence || environment["NVIDIA_API_KEY"].presence || environment["NVIDIA_API_KEY1"]
+      @model = model.presence || environment["NVIDIA_NIM_MODEL"].presence || environment["NVIDIA_AI_MODEL1"]
+      @endpoint = endpoint.presence || environment["NVIDIA_NIM_ENDPOINT"].presence || ENDPOINT
       @connection = connection || default_connection
     end
 

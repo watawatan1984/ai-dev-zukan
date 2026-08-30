@@ -1,4 +1,7 @@
 require "active_support/core_ext/integer/time"
+require_relative "../../lib/app_host"
+
+app_host = AppHost.resolve
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -57,7 +60,7 @@ Rails.application.configure do
 
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = {
-    host: ENV.fetch("APP_HOST", "localhost"),
+    host: app_host,
     protocol: "https"
   }
 
@@ -72,7 +75,7 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts = [ ENV.fetch("APP_HOST", "localhost") ]
+  config.hosts = [ app_host ]
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
