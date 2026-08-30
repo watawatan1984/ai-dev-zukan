@@ -24,6 +24,8 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
         user_content = request.dig("messages", 1, "content")
         assert_includes user_content, "taxonomy_registry_json"
         assert_includes user_content, "classification_basis_json"
+        assert_includes user_content, "For kind=mcp, do not include tag_slug \"mcp\""
+        assert_includes user_content, "For kind=skill, do not include tag_slug \"agent-skills\""
         assert_includes user_content, "Solid Queue Guide"
         assert_includes user_content, Taxonomy::Registry.version
         refute_includes user_content, "canonical_url"
@@ -65,7 +67,7 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
     assert_equal 0.92, result.confidence
     assert_equal "nvidia", result.provider
     assert_equal "nvidia/nemotron-3-ultra-test", result.model
-    assert_equal "catalog-taxonomy-v2", result.prompt_version
+    assert_equal "catalog-taxonomy-v2.1", result.prompt_version
     stubs.verify_stubbed_calls
   end
 
@@ -82,6 +84,58 @@ class Ai::NvidiaTaxonomizerTest < ActiveSupport::TestCase
     }.to_json
 
     assert_provider_error_for(content)
+  end
+
+  test "drops redundant kind tags returned by the provider before validation" do
+    resource = Resource.create!(
+      kind: :skill,
+      slug: "skill-kind-tag-#{SecureRandom.hex(6)}",
+      canonical_url: "https://example.com/#{SecureRandom.hex(6)}",
+      normalized_canonical_url: "https://example.com/#{SecureRandom.hex(6)}",
+      source_provider: :github
+    )
+    revision = resource.revisions.create!(
+      origin: :imported,
+      title: "Skill Pack",
+      source_excerpt: "AI agent skill examples",
+      source_fingerprint: SecureRandom.hex(12),
+      ai_summary: "AI開発用のスキル集です。",
+      summary_status: :succeeded,
+      taxonomy_status: :queued,
+      review_status: :draft
+    )
+    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.post("/v1/chat/completions") do
+        [
+          200,
+          { "Content-Type" => "application/json" },
+          {
+            choices: [ {
+              message: {
+                content: {
+                  category_slugs: [ "ai-llm-agents" ],
+                  tag_slugs: [ "agent-skills", "ai-agents", "github" ],
+                  search_keywords: [],
+                  confidence: 0.91
+                }.to_json
+              }
+            } ]
+          }.to_json
+        ]
+      end
+    end
+    connection = Faraday.new(url: "https://integrate.api.nvidia.com") do |faraday|
+      faraday.adapter :test, stubs
+    end
+
+    result = Ai::NvidiaTaxonomizer.new(
+      api_key: "test-key",
+      model: "vendor/model-under-test",
+      endpoint: "/v1/chat/completions",
+      connection:
+    ).call(revision:)
+
+    assert_equal [ "ai-agents", "github" ], result.tag_slugs
   end
 
   test "rejects malformed json and out of range confidence" do

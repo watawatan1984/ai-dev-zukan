@@ -4,7 +4,7 @@ module Ai
     class ProviderError < StandardError; end
 
     ENDPOINT = Ai::NvidiaSummarizer::ENDPOINT
-    PROMPT_VERSION = "catalog-taxonomy-v2".freeze
+    PROMPT_VERSION = "catalog-taxonomy-v2.1".freeze
 
     def initialize(
       api_key: nil,
@@ -75,6 +75,12 @@ module Ai
               classification_basis_json:
               #{classification_basis(revision).to_json}
 
+              Selection rules:
+              - Do not use a tag that restates the resource kind.
+              - For kind=mcp, do not include tag_slug "mcp".
+              - For kind=skill, do not include tag_slug "agent-skills".
+              - Prefer tags that describe language, platform, tool, technique, or runtime.
+
               JSON schema:
               {"category_slugs":["1-3 category slugs from taxonomy_registry_json.categories"],"tag_slugs":["2-6 tag slugs or aliases from taxonomy_registry_json.tags"],"search_keywords":["optional search phrases, max 30"],"confidence":0.0}
             PROMPT
@@ -109,7 +115,7 @@ module Ai
 
       suggestion = Ai::TaxonomySuggestion.new(
         category_slugs: bounded_slug_list(payload.fetch("category_slugs"), "category_slugs"),
-        tag_slugs: bounded_slug_list(payload.fetch("tag_slugs"), "tag_slugs"),
+        tag_slugs: normalized_tag_slugs(revision, payload.fetch("tag_slugs")),
         search_keywords: bounded_search_keywords(payload.fetch("search_keywords")),
         confidence: confidence.to_f,
         provider: "nvidia",
@@ -141,6 +147,13 @@ module Ai
       raise ProviderError, "NVIDIA NIM taxonomy JSON #{field} must be an array" unless values.is_a?(Array)
 
       Array(values).filter_map { |value| value.to_s.unicode_normalize(:nfkc).strip.downcase.presence }
+    end
+
+    def normalized_tag_slugs(revision, values)
+      bounded_slug_list(values, "tag_slugs").reject do |slug|
+        (revision.resource.kind_mcp? && slug == "mcp") ||
+          (revision.resource.kind_skill? && slug == "agent-skills")
+      end
     end
 
     def bounded_search_keywords(values)

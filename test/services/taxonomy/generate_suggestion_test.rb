@@ -35,6 +35,7 @@ class Taxonomy::GenerateSuggestionTest < ActiveSupport::TestCase
     assert_equal 1, taxonomizer.calls
     assert_predicate revision, :taxonomy_status_succeeded?
     assert_predicate revision, :taxonomy_origin_ai?
+    assert_predicate revision, :review_pending?
     assert_equal [ "automation-integration" ], revision.suggested_category_slugs
     assert_equal [ "ruby", "api-integration" ], revision.suggested_tag_slugs
     assert_equal [ "solid queue" ], revision.search_keywords

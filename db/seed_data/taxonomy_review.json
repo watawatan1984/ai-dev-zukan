@@ -1,0 +1,1741 @@
+{
+  "format": "ai-dev-zukan.taxonomy-review",
+  "version": 1,
+  "taxonomy_version": "taxonomy-v2",
+  "generated_at": "2026-08-31T01:09:43+09:00",
+  "records_sha256": "11cb9daa99ec754d8cbdda2ec4243b5b11677aef60c2eda332c43dabcc2954a9",
+  "records": [
+    {
+      "resource_id": 63,
+      "kind": "mcp",
+      "title": "alpaca-mcp-server",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "api-integration",
+        "data-analysis",
+        "automation"
+      ],
+      "confidence": 0.94,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 99,
+      "kind": "mcp",
+      "title": "apple-health-mcp",
+      "category_slugs": [
+        "ai-llm-agents",
+        "data-databases"
+      ],
+      "tag_slugs": [
+        "typescript",
+        "sql",
+        "ai-agents",
+        "local-first",
+        "self-hosted"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 30,
+      "kind": "mcp",
+      "title": "mcp-memory-service",
+      "category_slugs": [
+        "ai-llm-agents",
+        "data-databases"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "knowledge-graph",
+        "rag",
+        "vector-database"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 84,
+      "kind": "mcp",
+      "title": "comfyui-mcp",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "typescript",
+        "ai-agents",
+        "agent-skills",
+        "image-generation",
+        "video-generation",
+        "local-first"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 49,
+      "kind": "mcp",
+      "title": "mcp-searxng",
+      "category_slugs": [
+        "research-search",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "typescript",
+        "ai-agents",
+        "llm",
+        "self-hosted",
+        "web"
+      ],
+      "confidence": 0.94,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 52,
+      "kind": "mcp",
+      "title": "zotero-mcp",
+      "category_slugs": [
+        "research-search",
+        "automation-integration",
+        "documentation-knowledge"
+      ],
+      "tag_slugs": [
+        "typescript",
+        "ai-agents",
+        "document-processing",
+        "api-integration"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 7,
+      "kind": "mcp",
+      "title": "mcp",
+      "category_slugs": [
+        "infrastructure-devops",
+        "automation-integration",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "aws",
+        "ai-agents",
+        "api-integration",
+        "cloud",
+        "docker"
+      ],
+      "confidence": 0.96,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 43,
+      "kind": "mcp",
+      "title": "matlab-mcp-server",
+      "category_slugs": [
+        "automation-integration",
+        "ai-llm-agents",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "go",
+        "ai-agents",
+        "api-integration",
+        "automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 8,
+      "kind": "mcp",
+      "title": "firecrawl-mcp-server",
+      "category_slugs": [
+        "research-search",
+        "ai-llm-agents",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "web-scraping",
+        "browser-automation",
+        "api-integration",
+        "ai-agents"
+      ],
+      "confidence": 0.94,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 9,
+      "kind": "mcp",
+      "title": "browser-tools-mcp",
+      "category_slugs": [
+        "automation-integration",
+        "debugging-observability-performance"
+      ],
+      "tag_slugs": [
+        "browser-automation",
+        "performance",
+        "accessibility",
+        "seo",
+        "javascript"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 80,
+      "kind": "mcp",
+      "title": "unifi-mcp",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "automation",
+        "api-integration"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 62,
+      "kind": "mcp",
+      "title": "coding-tools-mcp",
+      "category_slugs": [
+        "ai-llm-agents",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "github"
+      ],
+      "confidence": 0.96,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 54,
+      "kind": "mcp",
+      "title": "google-meta-ads-ga4-mcp",
+      "category_slugs": [
+        "automation-integration",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "claude",
+        "cursor",
+        "oauth",
+        "automation",
+        "api-integration"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 35,
+      "kind": "mcp",
+      "title": "x64dbg-mcp-server",
+      "category_slugs": [
+        "debugging-observability-performance",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "debugging",
+        "automation",
+        "api-integration"
+      ],
+      "confidence": 0.93,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 25,
+      "kind": "mcp",
+      "title": "korean-law-mcp",
+      "category_slugs": [
+        "coding-development",
+        "research-search",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "typescript",
+        "claude",
+        "ai-agents",
+        "rag",
+        "api-integration"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 33,
+      "kind": "mcp",
+      "title": "slack-mcp-server",
+      "category_slugs": [
+        "automation-integration",
+        "coding-development",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "go",
+        "llm",
+        "api-integration",
+        "ai-agents",
+        "automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 6,
+      "kind": "mcp",
+      "title": "ida-pro-mcp",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "llm",
+        "automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 70,
+      "kind": "mcp",
+      "title": "Android-MCP",
+      "category_slugs": [
+        "automation-integration",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "python",
+        "android",
+        "automation",
+        "ai-agents",
+        "workflow-automation"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 14,
+      "kind": "mcp",
+      "title": "tradingview-mcp",
+      "category_slugs": [
+        "ai-llm-agents",
+        "data-databases",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "python",
+        "api-integration",
+        "data-analysis",
+        "cloud",
+        "self-hosted"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 93,
+      "kind": "mcp",
+      "title": "mcp-link",
+      "category_slugs": [
+        "coding-development",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "go",
+        "api-integration",
+        "automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 124,
+      "kind": "skill",
+      "title": "Vibe-Skills",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "python",
+        "claude-code",
+        "codex",
+        "ai-agents",
+        "multi-agent",
+        "automation"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 180,
+      "kind": "skill",
+      "title": "opendirectory",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "automation",
+        "workflow-automation"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 184,
+      "kind": "skill",
+      "title": "econ-writing-skill",
+      "category_slugs": [
+        "ai-llm-agents",
+        "research-search",
+        "documentation-knowledge"
+      ],
+      "tag_slugs": [
+        "python",
+        "claude-code",
+        "codex",
+        "ai-agents",
+        "prompt-engineering"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 159,
+      "kind": "skill",
+      "title": "marketing-skills",
+      "category_slugs": [
+        "ai-llm-agents",
+        "project-business-management"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "seo",
+        "automation",
+        "claude",
+        "claude-code"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 168,
+      "kind": "skill",
+      "title": "digital-oracle",
+      "category_slugs": [
+        "ai-llm-agents",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "python",
+        "claude",
+        "codex",
+        "cursor",
+        "ai-agents",
+        "llm"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 196,
+      "kind": "skill",
+      "title": "Tourmind-Booking-Skills",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "api-integration",
+        "automation"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 193,
+      "kind": "skill",
+      "title": "browser-search",
+      "category_slugs": [
+        "research-search",
+        "automation-integration",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "javascript",
+        "browser-automation",
+        "web-scraping",
+        "cloudflare",
+        "self-hosted"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 134,
+      "kind": "skill",
+      "title": "agents-best-practices",
+      "category_slugs": [
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "prompt-engineering",
+        "mcp",
+        "claude",
+        "claude-code",
+        "codex"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 132,
+      "kind": "skill",
+      "title": "agent-skills",
+      "category_slugs": [
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "python",
+        "mcp",
+        "ai-agents"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 169,
+      "kind": "skill",
+      "title": "claude-skills",
+      "category_slugs": [
+        "coding-development",
+        "design-content",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "python",
+        "claude",
+        "claude-code",
+        "ai-agents",
+        "seo",
+        "web"
+      ],
+      "confidence": 0.96,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 107,
+      "kind": "skill",
+      "title": "pm-skills",
+      "category_slugs": [
+        "project-business-management",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "claude",
+        "claude-code",
+        "ai-agents",
+        "workflow-automation"
+      ],
+      "confidence": 0.9,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 160,
+      "kind": "skill",
+      "title": "autoprompt-skill",
+      "category_slugs": [
+        "coding-development",
+        "design-review",
+        "testing-quality"
+      ],
+      "tag_slugs": [
+        "javascript",
+        "ai-agents",
+        "prompt-engineering",
+        "workflow-automation",
+        "code-review"
+      ],
+      "confidence": 0.93,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 197,
+      "kind": "skill",
+      "title": "ok-skills",
+      "category_slugs": [
+        "ai-llm-agents",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "prompt-engineering",
+        "codex",
+        "claude",
+        "cursor"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 117,
+      "kind": "skill",
+      "title": "serenity-skill",
+      "category_slugs": [
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "claude-code",
+        "codex"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 192,
+      "kind": "skill",
+      "title": "chatgpt-video-editing-skills",
+      "category_slugs": [
+        "coding-development",
+        "automation-integration",
+        "design-content"
+      ],
+      "tag_slugs": [
+        "codex",
+        "automation",
+        "video-generation",
+        "linux"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 119,
+      "kind": "skill",
+      "title": "Auto-Empirical-Research-Skills",
+      "category_slugs": [
+        "research-search",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "automation",
+        "data-analysis"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 158,
+      "kind": "skill",
+      "title": "app-store-connect-cli-skills",
+      "category_slugs": [
+        "automation-integration",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "python",
+        "automation",
+        "ci-cd",
+        "ios",
+        "macos"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 161,
+      "kind": "skill",
+      "title": "styleseed",
+      "category_slugs": [
+        "design-content",
+        "ai-llm-agents",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "typescript",
+        "react",
+        "nextjs",
+        "ai-agents"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 198,
+      "kind": "skill",
+      "title": "rust-skills",
+      "category_slugs": [
+        "ai-llm-agents",
+        "coding-development",
+        "documentation-knowledge"
+      ],
+      "tag_slugs": [
+        "rust",
+        "ai-agents",
+        "llm",
+        "claude-code",
+        "codex"
+      ],
+      "confidence": 0.96,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 142,
+      "kind": "skill",
+      "title": "azure-skills",
+      "category_slugs": [
+        "automation-integration",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "azure",
+        "ai-agents",
+        "mcp",
+        "automation"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 272,
+      "kind": "zenn_article",
+      "title": "ChatGPT Go と Plus のどちらを払うべきか：4本のレビューを突き合わせて分かったこと",
+      "category_slugs": [
+        "learning-career"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "llm",
+        "prompt-engineering"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 265,
+      "kind": "zenn_article",
+      "title": "【Next.js】法人番号から会社名・住所・インボイス登録状況を自動補完するフォームを作る",
+      "category_slugs": [
+        "coding-development",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "nextjs",
+        "javascript",
+        "api-integration",
+        "automation",
+        "web"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 232,
+      "kind": "zenn_article",
+      "title": "顧客専用サブドメインとホワイトラベル ― テナントの“真実源”はJWTではなくHost",
+      "category_slugs": [
+        "infrastructure-devops",
+        "security-governance"
+      ],
+      "tag_slugs": [
+        "authentication",
+        "security",
+        "web",
+        "cloud"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 293,
+      "kind": "zenn_article",
+      "title": "freee公開完了。3体のAI（Gemini・Claude・ローカルAI）に分担させて課金システムを作った話",
+      "category_slugs": [
+        "coding-development",
+        "automation-integration",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "api-integration",
+        "ai-agents",
+        "local-llm",
+        "automation",
+        "workflow-automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 282,
+      "kind": "zenn_article",
+      "title": "コーダーからフロントエンドエンジニアへ #1-39｜要素へのアクセス──インデックスと at()",
+      "category_slugs": [
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "javascript",
+        "web"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 266,
+      "kind": "zenn_article",
+      "title": "Pythonに埋め込んだJavaScriptで、無関係な機能まで丸ごと動かなくなっていた",
+      "category_slugs": [
+        "debugging-observability-performance"
+      ],
+      "tag_slugs": [
+        "python",
+        "javascript",
+        "debugging",
+        "web"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 215,
+      "kind": "zenn_article",
+      "title": "GitHub Actionsを「使い捨てLinuxデスクトップ」にする",
+      "category_slugs": [
+        "automation-integration",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "github-actions",
+        "github",
+        "cloudflare",
+        "linux",
+        "ci-cd",
+        "automation"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 253,
+      "kind": "zenn_article",
+      "title": "PostgreSQL移行は論理ダンプと復元テストをセットにする",
+      "category_slugs": [
+        "data-databases",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "postgresql",
+        "sql"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 224,
+      "kind": "zenn_article",
+      "title": "「CUDA必須」を無視してMacで鳴らす — MiniMax-Music3ローカル楽曲生成とClaude Codeパイプライン化",
+      "category_slugs": [
+        "ai-llm-agents",
+        "automation-integration",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "claude-code",
+        "local-llm",
+        "macos",
+        "python"
+      ],
+      "confidence": 0.94,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 229,
+      "kind": "zenn_article",
+      "title": "モデルサイズに応じてプロンプト戦術を出し分ける設計",
+      "category_slugs": [
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "typescript",
+        "javascript",
+        "local-llm",
+        "prompt-engineering",
+        "ai-agents"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 291,
+      "kind": "zenn_article",
+      "title": "AIエージェントは『ルール不足』だけでなく『あるのに使われない』でも壊れる —— Activation Failureという問題",
+      "category_slugs": [
+        "ai-llm-agents",
+        "debugging-observability-performance"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "debugging",
+        "prompt-engineering"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 269,
+      "kind": "zenn_article",
+      "title": "GitのPRレビューとTerraformのplan/apply、実は繋がっていた",
+      "category_slugs": [
+        "automation-integration",
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "github",
+        "github-actions",
+        "terraform",
+        "ci-cd",
+        "code-review"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 209,
+      "kind": "zenn_article",
+      "title": "packwerk の「違反ゼロ」は境界を保証しない — 分離できないアプリで No offenses detected を出す",
+      "category_slugs": [
+        "design-review"
+      ],
+      "tag_slugs": [
+        "ruby",
+        "ruby-on-rails",
+        "code-review",
+        "ci-cd"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 226,
+      "kind": "zenn_article",
+      "title": "PCはHerdr、外出先はPaseo：別アカウントのCodexをiPhoneから起動する",
+      "category_slugs": [
+        "ai-llm-agents",
+        "coding-development",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "codex",
+        "ai-agents",
+        "ios",
+        "workflow-automation"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 277,
+      "kind": "zenn_article",
+      "title": "AIは機能を足すのが速い。だから人間は削る仕事が増えた",
+      "category_slugs": [
+        "ai-llm-agents",
+        "project-business-management"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "prompt-engineering",
+        "automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 256,
+      "kind": "zenn_article",
+      "title": "AI組織を1人で運営する（1）全体像",
+      "category_slugs": [
+        "ai-llm-agents",
+        "project-business-management"
+      ],
+      "tag_slugs": [
+        "claude-code",
+        "ai-agents",
+        "multi-agent",
+        "automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 245,
+      "kind": "zenn_article",
+      "title": "為替が閉まっている土日に、ドル円がいくらかを推定する",
+      "category_slugs": [
+        "coding-development",
+        "data-databases"
+      ],
+      "tag_slugs": [
+        "python",
+        "api-integration",
+        "web-scraping",
+        "data-analysis"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 219,
+      "kind": "zenn_article",
+      "title": "自作npmパッケージにマルウェアを公開されたときにやったこと",
+      "category_slugs": [
+        "security-governance"
+      ],
+      "tag_slugs": [
+        "github",
+        "github-actions",
+        "security",
+        "authentication",
+        "ci-cd"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 261,
+      "kind": "zenn_article",
+      "title": "CodexとClaudeを同じリポジトリで働かせたら、色々壊れた——1人+2AIの事故対策の全部",
+      "category_slugs": [
+        "ai-llm-agents",
+        "project-business-management",
+        "security-governance"
+      ],
+      "tag_slugs": [
+        "codex",
+        "claude",
+        "ai-agents"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 221,
+      "kind": "zenn_article",
+      "title": "Claude Codeに“リードエンジニア”をやらせて、実用アプリを爆速かつ“崩さず”作る",
+      "category_slugs": [
+        "coding-development",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "python",
+        "claude-code",
+        "ai-agents",
+        "automation"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 337,
+      "kind": "qiita_article",
+      "title": "Vimのコマンドを丸暗記しないために、オペレータとモーションで整理してみた",
+      "category_slugs": [
+        "coding-development",
+        "documentation-knowledge"
+      ],
+      "tag_slugs": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "confidence": 0.9,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 330,
+      "kind": "qiita_article",
+      "title": "AIコーディングの「知識カットオフ」を埋める Context7 MCP Server",
+      "category_slugs": [
+        "coding-development",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "nextjs",
+        "react",
+        "typescript",
+        "claude",
+        "claude-code",
+        "mcp"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 379,
+      "kind": "qiita_article",
+      "title": "AIの口癖を日本語記事で測ろうとして、3回とも失敗した",
+      "category_slugs": [
+        "research-search"
+      ],
+      "tag_slugs": [
+        "claude",
+        "llm",
+        "prompt-engineering",
+        "data-analysis"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 304,
+      "kind": "qiita_article",
+      "title": "AIエージェントの作業結果、マークダウンで読むの辛くない？ →「HTML共有くん」を作りました",
+      "category_slugs": [
+        "automation-integration",
+        "infrastructure-devops",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "aws",
+        "github",
+        "ai-agents",
+        "automation",
+        "cloud"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 377,
+      "kind": "qiita_article",
+      "title": "【AWS入門】NAT Gatewayとは何か ─ S3への通信で気づいたVPCエンドポイントの必要性",
+      "category_slugs": [
+        "infrastructure-devops"
+      ],
+      "tag_slugs": [
+        "aws",
+        "cloud",
+        "security"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 315,
+      "kind": "qiita_article",
+      "title": "新人エンジニア、長時間考える体力がなさすぎて全然集中が続かない",
+      "category_slugs": [
+        "learning-career"
+      ],
+      "tag_slugs": [
+        "workflow-automation",
+        "automation"
+      ],
+      "confidence": 0.9,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 387,
+      "kind": "qiita_article",
+      "title": "パスキーはなぜ「盗まれても意味がない」と言えるのか - 真価を発揮する使い方",
+      "category_slugs": [
+        "security-governance"
+      ],
+      "tag_slugs": [
+        "security",
+        "authentication"
+      ],
+      "confidence": 0.95,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 399,
+      "kind": "qiita_article",
+      "title": "TeXで共通テスト数学の解答用紙を再現",
+      "category_slugs": [
+        "documentation-knowledge"
+      ],
+      "tag_slugs": [
+        "document-processing",
+        "github"
+      ],
+      "confidence": 0.9,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 306,
+      "kind": "qiita_article",
+      "title": "真似で伸びる人は、コードではなく判断基準を写し取っている",
+      "category_slugs": [
+        "learning-career",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "code-review",
+        "debugging"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 361,
+      "kind": "qiita_article",
+      "title": "原本は1つ、ビューは毎回作り直す。AIをアシスタントにした軽量タスク運用",
+      "category_slugs": [
+        "automation-integration",
+        "project-business-management",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "claude",
+        "automation",
+        "workflow-automation",
+        "ai-agents"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 323,
+      "kind": "qiita_article",
+      "title": "複雑なタスクほど、実は知っている基礎の組み合わせだったりする",
+      "category_slugs": [
+        "project-business-management",
+        "learning-career"
+      ],
+      "tag_slugs": [
+        "automation",
+        "workflow-automation"
+      ],
+      "confidence": 0.85,
+      "required_review": true,
+      "category_match": true,
+      "tag_match": false,
+      "review_note": "Tags automation/workflow-automation are weak for an article about decomposing complex tasks into fundamentals."
+    },
+    {
+      "resource_id": 375,
+      "kind": "qiita_article",
+      "title": "【2026年8月調査】OpenAPIって何ができる？日本の業務システム56件の「設計図」公開率を調べてみた",
+      "category_slugs": [
+        "documentation-knowledge",
+        "research-search",
+        "project-business-management"
+      ],
+      "tag_slugs": [
+        "api-integration",
+        "web"
+      ],
+      "confidence": 0.94,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 309,
+      "kind": "qiita_article",
+      "title": "【ローカルLLM】国産LLM「LLM-jp-4-33B」と「Qwen3.8-27B」の推論性能比較（RTX 5070 Ti + RTX 3070 Ti）",
+      "category_slugs": [
+        "ai-llm-agents",
+        "research-search"
+      ],
+      "tag_slugs": [
+        "local-llm",
+        "llm",
+        "performance",
+        "testing"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 339,
+      "kind": "qiita_article",
+      "title": "14MBのAIモデルは本当に動いた — DLL 1個・RAM 37MB・1回0.5秒、ただし日本語は0/5",
+      "category_slugs": [
+        "ai-llm-agents",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "python",
+        "ai-agents",
+        "local-llm",
+        "windows"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 376,
+      "kind": "qiita_article",
+      "title": "「API連携で○百万円」と言われて、まず何を調べるべきだったのか調べてみた",
+      "category_slugs": [
+        "automation-integration",
+        "project-business-management",
+        "research-search"
+      ],
+      "tag_slugs": [
+        "api-integration",
+        "automation",
+        "workflow-automation"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 302,
+      "kind": "qiita_article",
+      "title": "新人AI禁止のあと、「新人AI制御教育ハーネス」を配った結果（Skill原文あり）",
+      "category_slugs": [
+        "ai-llm-agents",
+        "learning-career",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "claude",
+        "ai-agents",
+        "javascript",
+        "mysql",
+        "prompt-engineering"
+      ],
+      "confidence": 0.92,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 348,
+      "kind": "qiita_article",
+      "title": "Claude CodeのCLAUDE.md書き方リファレンス",
+      "category_slugs": [
+        "documentation-knowledge",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "claude-code",
+        "claude",
+        "prompt-engineering"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 378,
+      "kind": "qiita_article",
+      "title": "Claude CodeのSkills(スキル)機能の使い方",
+      "category_slugs": [
+        "documentation-knowledge",
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "claude-code",
+        "claude",
+        "automation",
+        "ai-agents"
+      ],
+      "confidence": 0.96,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 301,
+      "kind": "qiita_article",
+      "title": "エラーを 3 秒で AI に丸投げする若手を見て、AI から答えを取り上げることにした",
+      "category_slugs": [
+        "debugging-observability-performance",
+        "ai-llm-agents",
+        "learning-career"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "prompt-engineering",
+        "llm",
+        "web"
+      ],
+      "confidence": 0.97,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 347,
+      "kind": "qiita_article",
+      "title": "Claude Code に制限モードが入った。自作スキル47本が0本になった",
+      "category_slugs": [
+        "ai-llm-agents",
+        "coding-development",
+        "security-governance"
+      ],
+      "tag_slugs": [
+        "claude",
+        "claude-code",
+        "mcp",
+        "ci-cd",
+        "security"
+      ],
+      "confidence": 0.94,
+      "required_review": false,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 32,
+      "kind": "mcp",
+      "title": "anysearch-mcp-server",
+      "category_slugs": [
+        "research-search",
+        "data-databases"
+      ],
+      "tag_slugs": [
+        "web",
+        "linux",
+        "cloud",
+        "self-hosted"
+      ],
+      "confidence": 0.85,
+      "required_review": true,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 144,
+      "kind": "skill",
+      "title": "agent",
+      "category_slugs": [
+        "ai-llm-agents"
+      ],
+      "tag_slugs": [
+        "github",
+        "ai-agents"
+      ],
+      "confidence": 0.85,
+      "required_review": true,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 220,
+      "kind": "zenn_article",
+      "title": "AIプロダクトの新規事業、立ち上げから1年の振り返り",
+      "category_slugs": [
+        "project-business-management"
+      ],
+      "tag_slugs": [
+        "ai-agents",
+        "automation"
+      ],
+      "confidence": 0.7,
+      "required_review": true,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 281,
+      "kind": "zenn_article",
+      "title": "作者が書く、Plumeria から抜ける方法",
+      "category_slugs": [
+        "coding-development",
+        "automation-integration"
+      ],
+      "tag_slugs": [
+        "automation",
+        "workflow-automation"
+      ],
+      "confidence": 0.85,
+      "required_review": true,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 324,
+      "kind": "qiita_article",
+      "title": "【コピペOK】CSSで作るモダンなUIアニメーション集",
+      "category_slugs": [
+        "design-content",
+        "coding-development"
+      ],
+      "tag_slugs": [
+        "web",
+        "javascript"
+      ],
+      "confidence": 0.85,
+      "required_review": true,
+      "category_match": true,
+      "tag_match": true,
+      "review_note": null
+    },
+    {
+      "resource_id": 325,
+      "kind": "qiita_article",
+      "title": "「5年後どうなりたい？」に答えられないのを、自身のキャリア意識が低いからだと責めないでほしい",
+      "category_slugs": [
+        "learning-career"
+      ],
+      "tag_slugs": [
+        "automation",
+        "knowledge-graph"
+      ],
+      "confidence": 0.85,
+      "required_review": true,
+      "category_match": true,
+      "tag_match": false,
+      "review_note": "Tags automation/knowledge-graph are weak for a career-reflection article about answering long-term career questions."
+    }
+  ]
+}

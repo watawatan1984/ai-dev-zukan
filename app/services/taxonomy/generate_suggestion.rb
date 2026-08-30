@@ -65,7 +65,8 @@ module Taxonomy
         taxonomy_prompt_version: result.prompt_version,
         taxonomy_origin: :ai,
         taxonomy_generated_at: Time.current,
-        taxonomy_status: :succeeded
+        taxonomy_status: :succeeded,
+        review_status: :review_pending
       )
     end
 
