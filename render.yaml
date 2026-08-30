@@ -21,9 +21,7 @@ services:
       - key: SOLID_QUEUE_IN_PUMA
         value: "1"
       - key: RAILS_MAX_THREADS
-        value: "3"
-      - key: WEB_CONCURRENCY
-        value: "1"
+        value: "5"
       - key: MAILER_FROM
         sync: false
       - key: GOOGLE_CLIENT_ID

@@ -296,6 +296,7 @@ module InitialCatalog
     end
 
     def sync_vocabulary(taxonomy)
+      declared_category_slugs = taxonomy.fetch("categories").map { |category| category.fetch("slug") }
       taxonomy.fetch("categories").each do |category_attributes|
         category = Category.find_or_initialize_by(slug: category_attributes.fetch("slug"))
         category.update!(
@@ -304,6 +305,7 @@ module InitialCatalog
           active: category_attributes.fetch("active")
         )
       end
+      Category.where.not(slug: declared_category_slugs).update_all(active: false, updated_at: Time.current)
 
       declared_tag_slugs = taxonomy.fetch("tags").map { |tag| tag.fetch("slug") }
       Tag.where.not(slug: declared_tag_slugs).update_all(active: false, filterable: false, updated_at: Time.current)

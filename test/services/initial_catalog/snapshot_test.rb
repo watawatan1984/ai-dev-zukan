@@ -134,6 +134,12 @@ class InitialCatalog::SnapshotTest < ActiveSupport::TestCase
     TagAlias.delete_all
     Tag.delete_all
     Category.delete_all
+    legacy_category = Category.create!(
+      slug: "legacy-generated-category",
+      name: "Legacy Generated Category",
+      position: 0,
+      active: true
+    )
 
     Tempfile.create([ "initial-catalog-v2", ".json" ]) do |file|
       write_snapshot(file.path, payload)
@@ -141,6 +147,7 @@ class InitialCatalog::SnapshotTest < ActiveSupport::TestCase
       InitialCatalog::ImportSnapshot.call(path: file.path, target: 1)
 
       assert_equal 14, Category.where(active: true).count
+      assert_not legacy_category.reload.active?
       assert_equal [ "custom-admin-tag", "ruby" ], Tag.where(active: true).order(:slug).pluck(:slug)
       assert_equal "custom-admin-tag", TagAlias.find_by!(normalized_name: "custom-admin-alias").tag.slug
       assert_nil Tag.find_by(slug: "python")

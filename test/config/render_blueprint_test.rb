@@ -34,4 +34,13 @@ class RenderBlueprintTest < ActiveSupport::TestCase
     assert_includes service.fetch("initialDeployHook"), "catalog:bootstrap:release"
     assert_equal "publish", release_confirmation.fetch("value")
   end
+
+  test "sizes the database pool for in-process Solid Queue without forcing Puma cluster mode" do
+    blueprint = YAML.safe_load_file(Rails.root.join("render.yaml"))
+    service = blueprint.fetch("services").find { |entry| entry.fetch("name") == "ai-dev-zukan" }
+    environment = service.fetch("envVars").index_by { |entry| entry.fetch("key") }
+
+    assert_equal "5", environment.fetch("RAILS_MAX_THREADS").fetch("value")
+    assert_not environment.key?("WEB_CONCURRENCY")
+  end
 end
