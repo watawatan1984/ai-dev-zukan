@@ -203,6 +203,37 @@ class InitialCatalog::SnapshotTest < ActiveSupport::TestCase
     end
   end
 
+  test "rejects malformed v2 aliases before vocabulary sync or record import" do
+    [
+      [ "nil alias", [ nil ] ],
+      [ "blank alias", [ " " ] ],
+      [ "duplicate normalized alias", [ "Rails", "rails" ] ],
+      [ "tag slug collision", [ "testing" ] ]
+    ].each do |label, aliases|
+      payload = version_two_payload(taxonomy: taxonomy_with_ruby_aliases(aliases))
+      sentinel = Tag.create!(
+        slug: "sentinel-tag-#{label.parameterize}",
+        name: "Sentinel #{label}",
+        normalized_name: "sentinel-tag-#{label.parameterize}",
+        vocabulary_group: "technique_architecture",
+        active: true,
+        filterable: true
+      )
+
+      Tempfile.create([ "initial-catalog-malformed-alias", ".json" ]) do |file|
+        write_snapshot(file.path, payload)
+
+        assert_raises(InitialCatalog::ImportSnapshot::InvalidSnapshot, label) do
+          InitialCatalog::ImportSnapshot.call(path: file.path, target: 1)
+        end
+
+        assert_predicate sentinel.reload, :active?, label
+        assert_equal 0, Resource.count, label
+        assert_equal 0, ResourceRevision.count, label
+      end
+    end
+  end
+
   test "does not export v2 snapshots until every revision has publishable controlled taxonomy" do
     InitialCatalog::Bootstrap::SOURCE_KINDS.values.each do |kind|
       revision = create_summarized_resource(kind:)
@@ -337,6 +368,12 @@ class InitialCatalog::SnapshotTest < ActiveSupport::TestCase
       "tag_groups" => Taxonomy::Registry.definition.fetch("tag_groups"),
       "tags" => Taxonomy::Registry.tags
     }
+  end
+
+  def taxonomy_with_ruby_aliases(aliases)
+    default_taxonomy_payload.tap do |taxonomy|
+      taxonomy.fetch("tags").find { |tag| tag.fetch("slug") == "ruby" }["aliases"] = aliases
+    end
   end
 
   def snapshot_record(kind:, uid:, revision:)

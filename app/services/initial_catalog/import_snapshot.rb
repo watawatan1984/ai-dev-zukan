@@ -115,7 +115,14 @@ module InitialCatalog
         raise InvalidSnapshot, "Snapshot tag alias list must be an array: #{slug}" unless tag.fetch("aliases").is_a?(Array)
 
         tag_slugs << slug
-        aliases.concat(tag.fetch("aliases").map { |alias_name| Taxonomy::Registry.normalize(alias_name) })
+        tag.fetch("aliases").each do |alias_name|
+          raise InvalidSnapshot, "Snapshot tag alias must be a string: #{slug}" unless alias_name.is_a?(String)
+
+          normalized_alias = Taxonomy::Registry.normalize(alias_name)
+          raise InvalidSnapshot, "Snapshot tag alias is blank: #{slug}" if alias_name.blank? || normalized_alias.blank?
+
+          aliases << normalized_alias
+        end
         raise InvalidSnapshot, "Snapshot tag normalized name conflict: #{slug}" unless normalized_name == slug
       end
 
