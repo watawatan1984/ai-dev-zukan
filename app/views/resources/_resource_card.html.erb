@@ -9,6 +9,11 @@
 
   <h2><%= link_to resource.current_revision.title, resource_path(resource.slug) %></h2>
   <p class="card-summary"><%= resource.current_revision.ai_summary.presence || "要約を準備しています。" %></p>
+  <%= render "taxonomy_badges",
+        resource: resource,
+        selection: local_assigns[:selection],
+        categories_by_slug: local_assigns.fetch(:categories_by_slug, {}),
+        tags_by_slug: local_assigns.fetch(:tags_by_slug, {}) %>
 
   <div class="card-stats">
     <% if resource.current_revision.author_name.present? %><span>@<%= resource.current_revision.author_name %></span><% end %>

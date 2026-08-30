@@ -1,0 +1,38 @@
+<% selected_category_slugs = selection&.category_slugs || [] %>
+<% selected_tag_slugs = selection&.tag_slugs || [] %>
+<% categories_by_slug = local_assigns.fetch(:categories_by_slug, {}) %>
+<% tags_by_slug = local_assigns.fetch(:tags_by_slug, {}) %>
+<% category_slugs = Array.wrap(resource.current_revision.suggested_category_slugs) %>
+<% tag_slugs = Array.wrap(resource.current_revision.suggested_tag_slugs) %>
+<% categories = category_slugs.filter_map { |slug| categories_by_slug[slug] }
+      .sort_by { |category| [ selected_category_slugs.include?(category.slug) ? 0 : 1, category.position, category.name ] } %>
+<% tags = tag_slugs.filter_map { |slug| tags_by_slug[slug] }
+      .sort_by { |tag_record| [ selected_tag_slugs.include?(tag_record.slug) ? 0 : 1, tag_record.vocabulary_group.to_s, tag_record.position, tag_record.name ] } %>
+
+<% if categories.any? || tags.any? %>
+  <div class="taxonomy-badges">
+    <% if categories.any? %>
+      <div class="taxonomy-badge-row" aria-label="一致カテゴリ">
+        <span class="taxonomy-label">一致カテゴリ</span>
+        <% categories.first(2).each do |category| %>
+          <span class="taxonomy-badge <%= "is-match" if selected_category_slugs.include?(category.slug) %>"><%= category.name %></span>
+        <% end %>
+        <% if categories.size > 2 %>
+          <span class="taxonomy-more">+<%= categories.size - 2 %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if tags.any? %>
+      <div class="taxonomy-badge-row" aria-label="一致タグ">
+        <span class="taxonomy-label">一致タグ</span>
+        <% tags.first(3).each do |tag_record| %>
+          <span class="taxonomy-badge tag-badge <%= "is-match" if selected_tag_slugs.include?(tag_record.slug) %>"><%= tag_record.name %></span>
+        <% end %>
+        <% if tags.size > 3 %>
+          <span class="taxonomy-more">+<%= tags.size - 3 %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

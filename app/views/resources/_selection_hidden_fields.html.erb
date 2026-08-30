@@ -1,0 +1,9 @@
+<% selection.to_h.except(:q).each do |name, value| %>
+  <% Array.wrap(value).each do |item| %>
+    <% if value.is_a?(Array) %>
+      <%= hidden_field_tag "#{name}[]", item, form: local_assigns[:form_id] %>
+    <% else %>
+      <%= hidden_field_tag name, item, form: local_assigns[:form_id] %>
+    <% end %>
+  <% end %>
+<% end %>

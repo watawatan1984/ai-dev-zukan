@@ -1,0 +1,94 @@
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  static targets = ["panel", "openButton", "sourceFilter", "contentType", "tagSearch", "selectionCount"]
+
+  connect() {
+    this.boundEscape = this.handleEscape.bind(this)
+    this.mediaQuery = window.matchMedia("(min-width: 881px)")
+    this.boundSyncPanelMode = this.syncPanelMode.bind(this)
+    this.mediaQuery.addEventListener("change", this.boundSyncPanelMode)
+    this.updateSourceVisibility()
+    this.updateSelectionCount()
+    this.syncPanelMode()
+  }
+
+  disconnect() {
+    document.removeEventListener("keydown", this.boundEscape)
+    this.mediaQuery?.removeEventListener("change", this.boundSyncPanelMode)
+    document.body.classList.remove("filter-sheet-open")
+  }
+
+  open(event) {
+    event.preventDefault()
+    this.lastFocusedElement = document.activeElement
+    this.panelTarget.classList.add("is-open")
+    this.panelTarget.setAttribute("aria-hidden", "false")
+    document.body.classList.add("filter-sheet-open")
+    document.addEventListener("keydown", this.boundEscape)
+
+    requestAnimationFrame(() => {
+      const firstInput = this.panelTarget.querySelector("input, select, button, a")
+      firstInput?.focus()
+    })
+  }
+
+  close(event) {
+    event?.preventDefault()
+    this.panelTarget.classList.remove("is-open")
+    this.panelTarget.setAttribute("aria-hidden", "true")
+    document.body.classList.remove("filter-sheet-open")
+    document.removeEventListener("keydown", this.boundEscape)
+    this.lastFocusedElement?.focus()
+  }
+
+  contentTypeChanged() {
+    this.updateSourceVisibility()
+    this.updateSelectionCount()
+  }
+
+  selectionChanged() {
+    this.updateSelectionCount()
+  }
+
+  filterTags() {
+    const query = this.tagSearchTarget.value.trim().toLowerCase()
+
+    this.panelTarget.querySelectorAll("[data-tag-option]").forEach((option) => {
+      const haystack = option.dataset.tagName || ""
+      option.hidden = query.length > 0 && !haystack.includes(query)
+    })
+  }
+
+  handleEscape(event) {
+    if (event.key === "Escape" && this.panelTarget.classList.contains("is-open")) {
+      this.close(event)
+    }
+  }
+
+  updateSourceVisibility() {
+    const blogSelected = this.contentTypeTargets.some((input) => input.value === "blog" && input.checked)
+    this.sourceFilterTarget.hidden = !blogSelected
+  }
+
+  updateSelectionCount() {
+    const checkedCount = this.panelTarget.querySelectorAll("input[type='checkbox']:checked").length
+    const periodSelected = this.panelTarget.querySelector("select[name='period']")?.value
+    const sortSelected = this.panelTarget.querySelector("select[name='sort']")?.value
+    let count = checkedCount
+
+    if (periodSelected) count += 1
+    if (sortSelected && sortSelected !== "relevance") count += 1
+
+    this.selectionCountTarget.textContent = `${count}件選択中`
+  }
+
+  syncPanelMode() {
+    if (this.mediaQuery.matches) {
+      this.panelTarget.setAttribute("aria-hidden", "false")
+      document.body.classList.remove("filter-sheet-open")
+    } else if (!this.panelTarget.classList.contains("is-open")) {
+      this.panelTarget.setAttribute("aria-hidden", "true")
+    }
+  }
+}

@@ -1,0 +1,141 @@
+<% content_type_options = [
+  [ "mcp", "MCP" ],
+  [ "skill", "Skill" ],
+  [ "blog", "Blog" ]
+] %>
+<% source_options = [
+  [ "zenn", "Zenn" ],
+  [ "qiita", "Qiita" ]
+] %>
+<% tag_counts = facet_counts.fetch(:tags) %>
+<% category_counts = facet_counts.fetch(:categories) %>
+<% content_counts = facet_counts.fetch(:content_types) %>
+<% source_counts = facet_counts.fetch(:sources) %>
+<% selected_count = selection.content_types.size + selection.sources.size + selection.category_slugs.size + selection.tag_slugs.size %>
+<% selected_count += 1 if selection.period.present? %>
+<% selected_count += 1 if selection.sort.present? && selection.sort != "relevance" %>
+
+<aside class="filter-panel"
+  data-facet-filter-target="panel"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="filters-title"
+  aria-hidden="true">
+  <button type="button" class="filter-backdrop" aria-label="絞り込みを閉じる" data-action="facet-filter#close"></button>
+
+  <div class="filter-sheet">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">FILTER</p>
+        <h2 id="filters-title">絞り込み</h2>
+      </div>
+      <button type="button" class="icon-button mobile-sheet-close" data-action="facet-filter#close">閉じる</button>
+    </div>
+
+    <div class="filter-scroll">
+      <fieldset class="filter-group">
+        <legend>コンテンツタイプ</legend>
+        <div class="chip-grid chip-grid-3">
+          <% content_type_options.each do |slug, label| %>
+            <label class="filter-chip">
+              <%= check_box_tag "content_types[]",
+                    slug,
+                    selection.content_types.include?(slug),
+                    id: "content-type-#{slug}",
+                    form: form_id,
+                    data: { facet_filter_target: "contentType", action: "facet-filter#contentTypeChanged facet-filter#selectionChanged" } %>
+              <span><%= label %><small><%= number_with_delimiter(content_counts.fetch(slug, 0)) %></small></span>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <fieldset class="filter-group"
+        data-source-filter
+        data-facet-filter-target="sourceFilter"
+        <%= "hidden" unless selection.content_types.include?("blog") %>>
+        <legend>記事ソース</legend>
+        <div class="chip-grid chip-grid-2">
+          <% source_options.each do |slug, label| %>
+            <label class="filter-chip">
+              <%= check_box_tag "sources[]",
+                    slug,
+                    selection.sources.include?(slug),
+                    id: "source-#{slug}",
+                    form: form_id,
+                    data: { action: "facet-filter#selectionChanged" } %>
+              <span><%= label %><small><%= number_with_delimiter(source_counts.fetch(slug, 0)) %></small></span>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <fieldset class="filter-group">
+        <legend>使用シチュエーション</legend>
+        <div class="filter-list">
+          <% categories.each do |category| %>
+            <label class="filter-row">
+              <%= check_box_tag "category_slugs[]",
+                    category.slug,
+                    selection.category_slugs.include?(category.slug),
+                    id: "category-#{category.slug}",
+                    form: form_id,
+                    data: { action: "facet-filter#selectionChanged" } %>
+              <span><%= category.name %></span>
+              <small><%= number_with_delimiter(category_counts.fetch(category.slug, 0)) %></small>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <fieldset class="filter-group">
+        <legend>技術タグ</legend>
+        <label class="tag-filter-search">
+          <span class="sr-only">タグを検索</span>
+          <input type="search"
+            placeholder="タグを検索"
+            aria-label="タグを検索"
+            data-facet-filter-target="tagSearch"
+            data-action="input->facet-filter#filterTags">
+        </label>
+        <div class="filter-list tag-filter-list">
+          <% tags.each do |tag_record| %>
+            <label class="filter-row" data-tag-option data-tag-name="<%= "#{tag_record.name} #{tag_record.slug}".downcase %>">
+              <%= check_box_tag "tag_slugs[]",
+                    tag_record.slug,
+                    selection.tag_slugs.include?(tag_record.slug),
+                    id: "tag-#{tag_record.slug}",
+                    form: form_id,
+                    data: { action: "facet-filter#selectionChanged" } %>
+              <span><%= tag_record.name %></span>
+              <small><%= number_with_delimiter(tag_counts.fetch(tag_record.slug, 0)) %></small>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <div class="filter-select-grid">
+        <label class="select-label">公開時期
+          <%= select_tag :period,
+                options_for_select([ [ "指定なし", "" ], [ "7日以内", "7d" ], [ "30日以内", "30d" ], [ "1年以内", "1y" ] ], selection.period),
+                form: form_id,
+                data: { action: "facet-filter#selectionChanged" } %>
+        </label>
+
+        <label class="select-label">並び順
+          <%= select_tag :sort,
+                options_for_select([ [ "おすすめ", "relevance" ], [ "人気順", "popular" ], [ "新着順", "newest" ] ], selection.sort),
+                form: form_id,
+                data: { action: "facet-filter#selectionChanged" } %>
+        </label>
+      </div>
+    </div>
+
+    <div class="filter-actions" data-filter-actions data-mobile-filter-actions>
+      <span data-facet-filter-target="selectionCount"><%= selected_count %>件選択中</span>
+      <%= link_to "リセット", resources_path, class: "button button-secondary" %>
+      <button type="submit" form="<%= form_id %>" class="button button-primary mobile-result-action">結果を見る</button>
+      <button type="submit" form="<%= form_id %>" class="button button-secondary desktop-apply">適用する</button>
+    </div>
+  </div>
+</aside>
