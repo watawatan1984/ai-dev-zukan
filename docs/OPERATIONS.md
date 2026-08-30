@@ -18,7 +18,7 @@ Render Freeは停止中の`/robots.txt`へ自動的に`Disallow: /`を返し、�
 
 ## GASスリープ対策
 
-1. Apps Scriptへ`ops/gas/scheduler.gs`を貼り付ける。
+1. `ops/gas`で`clasp create --type standalone --title "AI Dev Zukan Keepalive" --rootDir .`を実行し、`clasp push`で`appsscript.json`と`scheduler.gs`を同期する。既存Projectでは`.clasp.json`を復元して`clasp push`だけを行う。
 2. Script Propertiesに次を登録する。
    - `SCHEDULER_TICK_URL`: `https://<APP_HOST>/internal/scheduler_tick`
    - `GAS_SCHEDULER_SECRET`: Renderの同名環境変数と同じ十分に長い乱数
@@ -69,7 +69,7 @@ docker compose run --rm web bin/rails catalog:snapshot:export
 投入された400件はすべて`review_pending`かつ`unpublished`であり、初回デプロイだけで自動公開されることはない。管理者はWeb管理画面で出典と要約を確認して個別公開するか、品質レポートと管理画面のサンプルを確認した後、以下のtaskを本番環境で明示実行して各100件を監査ログ付きで公開する。
 
 ```powershell
-ADMIN_EMAIL=admin@example.com CONFIRM=publish bin/rails catalog:bootstrap:publish
+ADMIN_EMAIL=release-bot@ai-dev-zukan.invalid CONFIRM=publish bin/rails catalog:bootstrap:publish
 ```
 
 ローカル検証では同じtaskの前に`docker compose run --rm -e ... web`を付ける。本番一括公開はRender/Supabaseの資格情報を持つ実行環境だけで行い、品質ゲートと管理者権限を再検証する。

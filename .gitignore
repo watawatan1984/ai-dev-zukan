@@ -13,6 +13,7 @@
 /env
 /.firecrawl/
 /.wrangler/
+/ops/gas/.clasp.json
 
 # Ignore all logfiles and tempfiles.
 /log/*
