@@ -74,7 +74,17 @@
           <article class="recommendation-card">
             <span class="kind-badge kind-<%= recommendation.resource.kind %>"><%= resource_kind_label(recommendation.resource) %></span>
             <h3><%= link_to recommendation.resource.current_revision.title, resource_path(recommendation.resource.slug) %></h3>
-            <p><%= recommendation.reasons.join("・") %></p>
+            <div class="taxonomy-badge-group" aria-label="関連理由">
+              <% recommendation.reasons.fetch(:categories, []).each do |name| %>
+                <span class="taxonomy-badge">カテゴリ: <%= name %></span>
+              <% end %>
+              <% recommendation.reasons.fetch(:tags, []).each do |name| %>
+                <span class="taxonomy-badge">タグ: <%= name %></span>
+              <% end %>
+              <% recommendation.reasons.fetch(:kinds, []).each do |reason| %>
+                <span class="taxonomy-badge"><%= reason %></span>
+              <% end %>
+            </div>
           </article>
         <% end %>
       </div>

@@ -9,12 +9,15 @@
     <meta property="og:url" content="<%= content_for(:canonical) || request.original_url %>">
     <meta property="og:image" content="<%= "#{request.base_url}/icon.png" %>">
     <meta name="twitter:card" content="summary_large_image">
+    <% robots_content = content_for(:robots).presence || @robots %>
+    <%= tag.meta name: "robots", content: robots_content if robots_content.present? %>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#0b1220">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
-    <%= tag.link rel: "canonical", href: content_for(:canonical) if content_for?(:canonical) %>
+    <% canonical_url = content_for(:canonical).presence || @canonical_url %>
+    <%= tag.link rel: "canonical", href: canonical_url if canonical_url.present? %>
     <script nonce="<%= content_security_policy_nonce %>">
       (() => {
         const saved = localStorage.getItem("appearance") || "system";

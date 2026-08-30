@@ -2,6 +2,8 @@ class ResourcesController < ApplicationController
   def index
     search_params = params.permit(:q, :period, :sort, content_types: [], sources: [], category_slugs: [], tag_slugs: [])
     @selection = Search::Selection.build(params: search_params)
+    @canonical_url = resources_url
+    @robots = "noindex, follow" if @selection.filtered?
     results = Search::ResourcesQuery.call(selection: @selection, user: current_user)
 
     @result_count = results.count
@@ -17,6 +19,6 @@ class ResourcesController < ApplicationController
   def show
     @resource = Resource.publicly_visible.includes(:current_revision).find_by!(slug: params[:slug])
     @bookmarked = current_user&.bookmarks&.exists?(resource: @resource)
-    @recommendations = Recommendations::RelatedResources.call(resource: @resource)
+    @recommendations = Recommendations::RelatedResources.call(resource: @resource, user: current_user)
   end
 end
