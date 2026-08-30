@@ -99,8 +99,10 @@ export default class extends Controller {
 
   syncPanelMode() {
     if (this.mediaQuery.matches) {
+      this.panelTarget.classList.remove("is-open")
       this.deactivateDialog({ visible: true })
       document.body.classList.remove("filter-sheet-open")
+      document.removeEventListener("keydown", this.boundEscape)
     } else if (!this.panelTarget.classList.contains("is-open")) {
       this.deactivateDialog()
     }

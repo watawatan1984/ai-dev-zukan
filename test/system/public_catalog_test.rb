@@ -43,8 +43,18 @@ class PublicCatalogTest < ApplicationSystemTestCase
     assert_selector "[data-filter-actions]", visible: true
     assert_no_selector ".filter-panel[role='dialog']", visible: true
 
-    find("label", text: "MCP").send_keys(:space)
-    find("label", text: "Ruby").send_keys(:space)
+    focus_checkbox_by_tab("content-type-mcp")
+    page.send_keys(:space)
+    assert_selector "#content-type-mcp", checked: true, visible: :all
+
+    focus_checkbox_by_tab("category-automation-integration")
+    page.send_keys(:space)
+    assert_selector "#category-automation-integration", checked: true, visible: :all
+
+    focus_checkbox_by_tab("tag-ruby")
+    page.send_keys(:space)
+    assert_selector "#tag-ruby", checked: true, visible: :all
+
     click_on "適用する"
 
     assert_current_path resources_path, ignore_query: true
@@ -108,6 +118,27 @@ class PublicCatalogTest < ApplicationSystemTestCase
     assert_no_selector "[role='dialog'][aria-modal='true']", visible: true
   end
 
+  test "mobile open state is fully closed when resizing through desktop breakpoint" do
+    page.current_window.resize_to(390, 844)
+    visit resources_path
+
+    click_on "絞り込み"
+    assert_selector "[role='dialog'][aria-modal='true']", visible: true
+    assert page.evaluate_script("document.body.classList.contains('filter-sheet-open')")
+
+    page.current_window.resize_to(1280, 720)
+
+    assert_no_selector ".filter-panel.is-open", visible: :all
+    assert_no_selector ".filter-panel[role='dialog']", visible: :all
+    assert_not page.evaluate_script("document.body.classList.contains('filter-sheet-open')")
+
+    page.current_window.resize_to(390, 844)
+
+    assert_no_selector ".filter-panel.is-open", visible: :all
+    assert_no_selector ".filter-panel[role='dialog']", visible: :all
+    assert_not page.evaluate_script("document.body.classList.contains('filter-sheet-open')")
+  end
+
   test "active filter chips clear one value or all filters" do
     visit resources_path(content_types: [ "mcp", "blog" ], tag_slugs: [ "ruby" ])
 
@@ -134,6 +165,16 @@ class PublicCatalogTest < ApplicationSystemTestCase
   end
 
   private
+
+  def focus_checkbox_by_tab(id, maximum_tabs: 80)
+    maximum_tabs.times do
+      break if page.evaluate_script("document.activeElement.id") == id
+
+      page.send_keys(:tab)
+    end
+
+    assert_equal id, page.evaluate_script("document.activeElement.id")
+  end
 
   def publish_resource(slug:, title:, summary:, kind:, source_provider:, categories:, tags:)
     resource = Resource.create!(

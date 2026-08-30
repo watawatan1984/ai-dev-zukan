@@ -156,6 +156,15 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     assert_select "[data-active-filters]", count: 0
   end
 
+  test "facet filter controller clears open state on desktop resize" do
+    controller = Rails.root.join("app/javascript/controllers/facet_filter_controller.js").read
+    sync_panel_mode = controller[/syncPanelMode\(\) \{(?<body>.*?)\n  \}/m, :body]
+
+    assert_includes sync_panel_mode, "this.panelTarget.classList.remove(\"is-open\")"
+    assert_includes sync_panel_mode, "document.removeEventListener(\"keydown\", this.boundEscape)"
+    assert_includes sync_panel_mode, "deactivateDialog({ visible: true })"
+  end
+
   private
 
   def publish_resource(slug:, title:, summary:, kind: :mcp, source_provider: :github, categories: [], tags: [])
