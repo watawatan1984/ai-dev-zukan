@@ -45,15 +45,15 @@ class PublicCatalogTest < ApplicationSystemTestCase
 
     focus_checkbox_by_tab("content-type-mcp")
     page.send_keys(:space)
-    assert_selector "#content-type-mcp", checked: true, visible: :all
+    assert find("#content-type-mcp", visible: :all).checked?
 
     focus_checkbox_by_tab("category-automation-integration")
     page.send_keys(:space)
-    assert_selector "#category-automation-integration", checked: true, visible: :all
+    assert find("#category-automation-integration", visible: :all).checked?
 
     focus_checkbox_by_tab("tag-ruby")
     page.send_keys(:space)
-    assert_selector "#tag-ruby", checked: true, visible: :all
+    assert find("#tag-ruby", visible: :all).checked?
 
     click_on "適用する"
 
@@ -67,8 +67,7 @@ class PublicCatalogTest < ApplicationSystemTestCase
     visit resources_path
 
     opener = find_button("絞り込み")
-    opener.native.focus
-    click_on "絞り込み"
+    opener.send_keys(:enter)
     assert_selector "[role='dialog'][aria-modal='true']", visible: true
     assert_equal "filters-title", page.evaluate_script("document.activeElement.id")
     assert page.evaluate_script("document.body.classList.contains('filter-sheet-open')")
@@ -100,7 +99,7 @@ class PublicCatalogTest < ApplicationSystemTestCase
 
     click_on "絞り込み"
     assert_selector "[role='dialog'][aria-modal='true']", visible: true
-    assert_selector "#source-zenn", checked: true, visible: :all
+    assert find("#source-zenn", visible: :all).checked?
 
     find("label", text: "Blog").send_keys(:space)
     assert page.has_css?("[data-source-filter][hidden]", visible: :all)
