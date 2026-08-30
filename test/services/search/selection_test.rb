@@ -76,4 +76,35 @@ class Search::SelectionTest < ActiveSupport::TestCase
       Search::Selection.build(params: { tag_slugs: Taxonomy::Registry.tag_slugs.first(21) })
     end
   end
+
+  test "removes scalar filters when chip value matches current selection" do
+    selection = Search::Selection.build(
+      params: {
+        q: "ruby",
+        period: "30d",
+        sort: "popular",
+        content_types: [ "mcp" ]
+      }
+    )
+
+    assert_nil selection.without(:q, "ruby").query
+    assert_nil selection.without(:query, "ruby").query
+    assert_nil selection.without(:period, "30d").period
+    assert_equal "relevance", selection.without(:sort, "popular").sort
+    assert_equal %w[mcp], selection.without(:sort, "popular").content_types
+  end
+
+  test "keeps scalar filters when chip value does not match current selection" do
+    selection = Search::Selection.build(
+      params: {
+        q: "ruby",
+        period: "30d",
+        sort: "popular"
+      }
+    )
+
+    assert_equal "ruby", selection.without(:q, "rails").query
+    assert_equal "30d", selection.without(:period, "7d").period
+    assert_equal "popular", selection.without(:sort, "newest").sort
+  end
 end

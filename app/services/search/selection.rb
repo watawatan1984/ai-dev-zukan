@@ -106,6 +106,18 @@ module Search
 
     def without(facet, value)
       case facet.to_sym
+      when :q, :query
+        return self unless query == self.class.send(:normalize_query, value)
+
+        self.class.build(params: to_h.except(:q))
+      when :period
+        return self unless period == value.to_s
+
+        self.class.build(params: to_h.except(:period))
+      when :sort
+        return self unless sort == value.to_s
+
+        self.class.build(params: to_h.except(:sort))
       when :content_types
         self.class.build(params: to_h.merge(content_types: content_types - [ value.to_s ]))
       when :sources
