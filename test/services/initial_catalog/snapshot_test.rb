@@ -67,6 +67,39 @@ class InitialCatalog::SnapshotTest < ActiveSupport::TestCase
     end
   end
 
+  test "queues v1 taxonomy when any original tag is uncontrolled" do
+    payload = version_one_payload
+    payload.fetch("records").first.fetch("revision")["suggested_tag_slugs"] = [ "rails", "testing", "uncontrolled-tag" ]
+
+    Tempfile.create([ "initial-catalog-v1-partial-tags", ".json" ]) do |file|
+      write_snapshot(file.path, payload)
+
+      InitialCatalog::ImportSnapshot.call(path: file.path, target: 1)
+
+      revision = Resource.find_by!(kind: :mcp).revisions.sole
+      assert_equal "coding-development", revision.suggested_category_slug
+      assert_equal [], revision.suggested_category_slugs
+      assert_equal [], revision.suggested_tag_slugs
+      assert_predicate revision, :taxonomy_status_queued?
+    end
+  end
+
+  test "queues v1 taxonomy when aliases resolve to duplicate canonical tags" do
+    payload = version_one_payload
+    payload.fetch("records").first.fetch("revision")["suggested_tag_slugs"] = [ "rails", "rubyonrails", "testing" ]
+
+    Tempfile.create([ "initial-catalog-v1-duplicate-tags", ".json" ]) do |file|
+      write_snapshot(file.path, payload)
+
+      InitialCatalog::ImportSnapshot.call(path: file.path, target: 1)
+
+      revision = Resource.find_by!(kind: :mcp).revisions.sole
+      assert_equal [], revision.suggested_category_slugs
+      assert_equal [], revision.suggested_tag_slugs
+      assert_predicate revision, :taxonomy_status_queued?
+    end
+  end
+
   test "imports v2 snapshots and recreates only declared active vocabulary" do
     payload = version_two_payload(
       taxonomy: {
@@ -115,6 +148,32 @@ class InitialCatalog::SnapshotTest < ActiveSupport::TestCase
     end
   end
 
+  test "rejects malformed v2 records before vocabulary sync or record import" do
+    payload = version_two_payload
+    payload.fetch("records").first.fetch("revision").delete("title")
+    sentinel = Tag.create!(
+      slug: "sentinel-tag",
+      name: "Sentinel Tag",
+      normalized_name: "sentinel-tag",
+      vocabulary_group: "technique_architecture",
+      active: true,
+      filterable: true
+    )
+
+    Tempfile.create([ "initial-catalog-malformed-record", ".json" ]) do |file|
+      write_snapshot(file.path, payload)
+
+      error = assert_raises(InitialCatalog::ImportSnapshot::InvalidSnapshot) do
+        InitialCatalog::ImportSnapshot.call(path: file.path, target: 1)
+      end
+
+      assert_match(/missing revision key: title/, error.message)
+      assert_predicate sentinel.reload, :active?
+      assert_equal 0, Resource.count
+      assert_equal 0, ResourceRevision.count
+    end
+  end
+
   test "rejects invalid v2 taxonomy before changing the database" do
     payload = version_two_payload(tag_slugs: [ "ruby", "missing-declared-tag" ])
 
@@ -141,6 +200,21 @@ class InitialCatalog::SnapshotTest < ActiveSupport::TestCase
           InitialCatalog::ImportSnapshot.call(path: file.path, target: 1)
         end
       end
+    end
+  end
+
+  test "does not export v2 snapshots until every revision has publishable controlled taxonomy" do
+    InitialCatalog::Bootstrap::SOURCE_KINDS.values.each do |kind|
+      revision = create_summarized_resource(kind:)
+      revision.update!(taxonomy_status: :queued) if kind == :mcp
+    end
+
+    Tempfile.create([ "initial-catalog-unready-taxonomy", ".json" ]) do |file|
+      assert_raises(InitialCatalog::ExportSnapshot::InvalidCatalog) do
+        InitialCatalog::ExportSnapshot.call(path: file.path, target: 1)
+      end
+
+      assert_equal "", File.read(file.path)
     end
   end
 

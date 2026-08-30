@@ -58,6 +58,7 @@ module InitialCatalog
     end
 
     def serialize(revision)
+      validate_revision!(revision)
       resource = revision.resource
       {
         "resource" => {
@@ -97,6 +98,17 @@ module InitialCatalog
           "taxonomy_confidence" => revision.taxonomy_confidence&.to_f
         }
       }
+    end
+
+    def validate_revision!(revision)
+      unless revision.taxonomy_status_succeeded?
+        raise InvalidCatalog, "Revision #{revision.id} taxonomy must be succeeded before export"
+      end
+
+      validation = Taxonomy::ValidateSuggestion.call(revision:)
+      return if validation.valid?
+
+      raise InvalidCatalog, "Revision #{revision.id} taxonomy invalid: #{validation.errors.join(', ')}"
     end
 
     def taxonomy_payload

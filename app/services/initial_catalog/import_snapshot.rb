@@ -2,6 +2,18 @@ module InitialCatalog
   class ImportSnapshot
     InvalidSnapshot = Class.new(StandardError)
     SUPPORTED_VERSIONS = [ 1, 2 ].freeze
+    RESOURCE_KEYS = %w[
+      kind provider external_uid canonical_url source_published_at source_updated_at popularity_raw
+    ].freeze
+    SUMMARY_REVISION_KEYS = %w[
+      title source_excerpt source_fingerprint ai_summary capabilities key_points suggested_tag_slugs
+      ai_provider ai_model prompt_version summary_basis summary_input_sha256 summary_generated_at
+    ].freeze
+    V1_REVISION_KEYS = (SUMMARY_REVISION_KEYS + %w[suggested_category_slug]).freeze
+    V2_REVISION_KEYS = (SUMMARY_REVISION_KEYS + %w[
+      suggested_category_slugs search_keywords taxonomy_status taxonomy_origin taxonomy_provider
+      taxonomy_model taxonomy_prompt_version taxonomy_input_sha256 taxonomy_generated_at taxonomy_confidence
+    ]).freeze
     Result = Data.define(:target, :created_revisions, :unchanged_revisions, :counts)
 
     def self.call(path:, target: Bootstrap::MAX_LIMIT)
@@ -43,6 +55,8 @@ module InitialCatalog
       raise InvalidSnapshot, "Snapshot target does not match" unless payload["target"] == target
 
       records = payload.fetch("records")
+      raise InvalidSnapshot, "Snapshot records must be an array" unless records.is_a?(Array)
+
       checksum = Digest::SHA256.hexdigest(JSON.generate(records))
       raise InvalidSnapshot, "Snapshot checksum does not match" unless checksum == payload["records_sha256"]
       taxonomy = validate_taxonomy!(payload, version)
@@ -167,15 +181,20 @@ module InitialCatalog
     end
 
     def normalize_v1_record(record)
+      validate_record_shape!(record, V1_REVISION_KEYS)
       revision = record.fetch("revision").dup
       category_slug = normalize_identifier(revision["suggested_category_slug"])
-      tag_slugs = Array(revision.fetch("suggested_tag_slugs")).filter_map do |value|
+      raw_tag_slugs = revision.fetch("suggested_tag_slugs")
+      tag_slugs = raw_tag_slugs.map do |value|
         resolve_current_tag(value)
-      end.uniq
+      end
 
       category_slugs = fixed_category_slugs.include?(category_slug) ? [ category_slug ] : []
-      taxonomy_ready = category_slugs.any? && (2..6).cover?(tag_slugs.size)
       validate_resource_enums!(record)
+      taxonomy_ready = category_slugs.any? &&
+        tag_slugs.all? &&
+        (2..6).cover?(tag_slugs.size) &&
+        tag_slugs.uniq.size == tag_slugs.size
       revision.merge!(
         "suggested_category_slug" => revision["suggested_category_slug"],
         "suggested_category_slugs" => taxonomy_ready ? category_slugs : [],
@@ -194,6 +213,7 @@ module InitialCatalog
     end
 
     def normalize_v2_record(record, taxonomy)
+      validate_record_shape!(record, V2_REVISION_KEYS)
       revision = record.fetch("revision").dup
       category_slugs = Array(revision.fetch("suggested_category_slugs")).map { |value| normalize_identifier(value) }
       tag_slugs = Array(revision.fetch("suggested_tag_slugs")).map { |value| resolve_declared_tag!(value, taxonomy) }
@@ -201,10 +221,12 @@ module InitialCatalog
 
       validate_resource_enums!(record)
       validate_revision_enums!(revision)
+      raise InvalidSnapshot, "Taxonomy status must be succeeded" unless revision.fetch("taxonomy_status") == "succeeded"
       validate_assignment_counts!(category_slugs, tag_slugs)
       reject_duplicates!(category_slugs, "category")
       reject_duplicates!(tag_slugs, "tag")
       reject_duplicates!(search_keywords, "search keyword")
+      validate_content_type_tags!(record.fetch("resource").fetch("kind"), tag_slugs)
       category_slugs.each do |slug|
         raise InvalidSnapshot, "Revision category is not declared: #{slug}" unless fixed_category_slugs.include?(slug)
       end
@@ -221,6 +243,49 @@ module InitialCatalog
         "taxonomy_origin" => revision.fetch("taxonomy_origin")
       )
       record.merge("revision" => revision)
+    end
+
+    def validate_record_shape!(record, revision_keys)
+      raise InvalidSnapshot, "Snapshot record must be an object" unless record.is_a?(Hash)
+
+      resource = record.fetch("resource") { raise InvalidSnapshot, "missing record key: resource" }
+      revision = record.fetch("revision") { raise InvalidSnapshot, "missing record key: revision" }
+      raise InvalidSnapshot, "Snapshot resource must be an object" unless resource.is_a?(Hash)
+      raise InvalidSnapshot, "Snapshot revision must be an object" unless revision.is_a?(Hash)
+
+      RESOURCE_KEYS.each { |key| fetch_required!(resource, key, "resource") }
+      revision_keys.each { |key| fetch_required!(revision, key, "revision") }
+      validate_resource_values!(resource)
+      validate_revision_values!(revision)
+    end
+
+    def validate_resource_values!(resource)
+      %w[kind provider external_uid canonical_url].each do |key|
+        raise InvalidSnapshot, "resource #{key} must be present" if resource.fetch(key).blank?
+      end
+      parse_time(resource["source_published_at"])
+      parse_time(resource["source_updated_at"])
+      Integer(resource.fetch("popularity_raw"))
+    end
+
+    def validate_revision_values!(revision)
+      %w[title source_excerpt source_fingerprint ai_summary ai_provider ai_model prompt_version summary_basis summary_input_sha256].each do |key|
+        raise InvalidSnapshot, "revision #{key} must be present" if revision.fetch(key).blank?
+      end
+      %w[capabilities key_points suggested_tag_slugs].each do |key|
+        raise InvalidSnapshot, "revision #{key} must be an array" unless revision.fetch(key).is_a?(Array)
+      end
+      %w[suggested_category_slugs search_keywords].each do |key|
+        next unless revision.key?(key)
+
+        raise InvalidSnapshot, "revision #{key} must be an array" unless revision.fetch(key).is_a?(Array)
+      end
+      parse_time(revision["summary_generated_at"])
+      parse_time(revision["taxonomy_generated_at"]) if revision.key?("taxonomy_generated_at")
+    end
+
+    def fetch_required!(payload, key, section)
+      payload.fetch(key) { raise InvalidSnapshot, "missing #{section} key: #{key}" }
     end
 
     def sync_vocabulary(taxonomy)
@@ -270,6 +335,11 @@ module InitialCatalog
     def validate_assignment_counts!(category_slugs, tag_slugs)
       raise InvalidSnapshot, "Category count must be 1-3: #{category_slugs.size}" unless (1..3).cover?(category_slugs.size)
       raise InvalidSnapshot, "Tag count must be 2-6: #{tag_slugs.size}" unless (2..6).cover?(tag_slugs.size)
+    end
+
+    def validate_content_type_tags!(kind, tag_slugs)
+      raise InvalidSnapshot, "Tag restates content type: mcp" if kind == "mcp" && tag_slugs.include?("mcp")
+      raise InvalidSnapshot, "Tag restates content type: agent-skills" if kind == "skill" && tag_slugs.include?("agent-skills")
     end
 
     def resolve_declared_tag!(value, taxonomy)
