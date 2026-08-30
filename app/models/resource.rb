@@ -59,13 +59,7 @@ class Resource < ApplicationRecord
         publication_status: :published,
         published_at: published_at || Time.current,
         archived_at: nil,
-        search_text: Search::Normalize.call([
-          revision.title,
-          revision.author_name,
-          revision.ai_summary,
-          category&.name,
-          tags.pluck(:name)
-        ].compact.join(" "))
+        search_text: Search::IndexText.call(resource: self, revision:)
       )
     end
   end

@@ -1,6 +1,10 @@
 require "test_helper"
 
 class InitialCatalog::PublishTest < ActiveSupport::TestCase
+  setup do
+    Taxonomy::SyncVocabulary.call
+  end
+
   test "requires explicit confirmation and publishes an atomic reviewed batch" do
     InitialCatalog::Bootstrap::SOURCE_KINDS.values.each do |kind|
       2.times { |index| create_candidate(kind:, index:) }
@@ -61,6 +65,8 @@ class InitialCatalog::PublishTest < ActiveSupport::TestCase
       title: identifier,
       source_fingerprint: "fingerprint-#{identifier}",
       ai_summary: "#{identifier}の要約です。",
+      suggested_category_slugs: [ "coding-development" ],
+      suggested_tag_slugs: [ "ruby", "testing" ],
       summary_status: :succeeded,
       review_status: :review_pending
     )

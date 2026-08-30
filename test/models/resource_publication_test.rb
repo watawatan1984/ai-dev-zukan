@@ -1,6 +1,10 @@
 require "test_helper"
 
 class ResourcePublicationTest < ActiveSupport::TestCase
+  setup do
+    Taxonomy::SyncVocabulary.call
+  end
+
   test "review pending revision cannot become the published revision" do
     resource = Resource.create!(
       kind: :mcp,
@@ -40,15 +44,28 @@ class ResourcePublicationTest < ActiveSupport::TestCase
       origin: :imported,
       title: "Example Skill",
       source_fingerprint: "approved-fingerprint",
+      ai_summary: "A Rails testing skill.",
+      capabilities: [ "Generates tests" ],
+      key_points: [ "Uses fixtures" ],
+      search_keywords: [ "  test automation  " ],
       summary_status: :succeeded,
       review_status: :approved
     )
+    resource.resource_categories.create!(category: Category.find_by!(slug: "coding-development"), origin: :ai)
+    resource.controlled_resource_tags.create!(tag: Tag.find_by!(slug: "ruby-on-rails"), origin: :ai)
 
     resource.publish!(revision: revision)
 
     assert_predicate resource.reload, :published?
     assert_equal revision, resource.current_revision
     assert_not_nil resource.published_at
+    assert_includes resource.search_text, "example skill"
+    assert_includes resource.search_text, "generates tests"
+    assert_includes resource.search_text, "uses fixtures"
+    assert_includes resource.search_text, "コード作成・開発支援"
+    assert_includes resource.search_text, "ruby on rails"
+    assert_includes resource.search_text, "rails"
+    assert_includes resource.search_text, "test automation"
   end
 
   test "approved revision content is immutable" do

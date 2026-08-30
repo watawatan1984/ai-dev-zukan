@@ -21,6 +21,11 @@ module Editorial
 
       revision.transaction do
         previous_status = revision.review_status
+        before_controlled_category_ids = revision.resource.controlled_category_ids.sort
+        before_controlled_tag_ids = revision.resource.controlled_tag_ids.sort
+        validation = Taxonomy::ValidateSuggestion.call(revision: revision)
+        raise Taxonomy::ApplyRevision::InvalidSuggestion, validation.errors unless validation.valid?
+
         unless revision.approved?
           revision.update!(
             review_status: :approved,
@@ -31,6 +36,7 @@ module Editorial
         end
         Taxonomy::ApplyRevision.call(revision: revision)
         revision.resource.publish!(revision: revision)
+        resource = revision.resource.reload
         AdminAuditLog.create!(
           actor: reviewer,
           auditable: revision,
@@ -38,7 +44,9 @@ module Editorial
           request_id: request_id,
           changeset: {
             review_status: [ previous_status, revision.review_status ],
-            resource_id: revision.resource_id
+            resource_id: revision.resource_id,
+            controlled_category_ids: [ before_controlled_category_ids, resource.controlled_category_ids.sort ],
+            controlled_tag_ids: [ before_controlled_tag_ids, resource.controlled_tag_ids.sort ]
           }
         )
       end
