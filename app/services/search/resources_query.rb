@@ -7,19 +7,20 @@ module Search
       "1y" => 1.year
     }.freeze
 
-    def self.call(params:, user: nil)
-      new(params: params, user: user).call
+    def self.call(selection: nil, params: nil, user: nil)
+      selection ||= Search::Selection.build(params: params || {})
+      new(selection: selection, user: user).call
     end
 
-    def initialize(params:, user: nil)
-      @params = params.to_h.with_indifferent_access
+    def initialize(selection:, user: nil)
+      @selection = selection
       @user = user
     end
 
     def call
       relation = Resource.publicly_visible.includes(:current_revision)
       relation = exclude_hidden(relation)
-      relation = filter_kind(relation)
+      relation = filter_content_type_and_source(relation)
       relation = filter_category(relation)
       relation = filter_tag(relation)
       relation = filter_period(relation)
@@ -29,28 +30,47 @@ module Search
 
     private
 
-    attr_reader :params, :user
+    attr_reader :selection, :user
 
-    def filter_kind(relation)
-      return relation unless Resource.kinds.key?(params[:kind])
+    def filter_content_type_and_source(relation)
+      return relation if selection.content_types.empty?
 
-      relation.where(kind: params[:kind])
+      table = Resource.arel_table
+      branches = []
+      branches << table[:kind].eq(Resource.kinds.fetch("mcp")) if selection.content_types.include?("mcp")
+      branches << table[:kind].eq(Resource.kinds.fetch("skill")) if selection.content_types.include?("skill")
+      if selection.content_types.include?("blog")
+        blog_branch = table[:kind].in([ Resource.kinds.fetch("zenn_article"), Resource.kinds.fetch("qiita_article") ])
+        if selection.sources.any?
+          source_values = selection.sources.map { |source| Resource.source_providers.fetch(source) }
+          blog_branch = blog_branch.and(table[:source_provider].in(source_values))
+        end
+        branches << blog_branch
+      end
+
+      relation.where(branches.reduce { |left, right| left.or(right) })
     end
 
     def filter_category(relation)
-      return relation if params[:category].blank?
+      return relation if selection.category_slugs.empty?
 
-      relation.joins(:category).where(categories: { slug: params[:category] })
+      matching_ids = Resource.joins(:controlled_categories)
+        .where(categories: { slug: selection.category_slugs })
+        .select(:id)
+      relation.where(id: matching_ids)
     end
 
     def filter_tag(relation)
-      return relation if params[:tag].blank?
+      return relation if selection.tag_slugs.empty?
 
-      relation.joins(:tags).where(tags: { slug: params[:tag] })
+      matching_ids = Resource.joins(:controlled_tags)
+        .where(tags: { slug: selection.tag_slugs })
+        .select(:id)
+      relation.where(id: matching_ids)
     end
 
     def filter_period(relation)
-      duration = PERIODS[params[:period]]
+      duration = PERIODS[selection.period]
       return relation unless duration
 
       relation.where(source_published_at: (Time.current - duration)..)
@@ -94,11 +114,11 @@ module Search
     end
 
     def normalized_query
-      @normalized_query ||= Search::Normalize.call(params[:q])
+      @normalized_query ||= Search::Normalize.call(selection.query)
     end
 
     def selected_sort
-      ALLOWED_SORTS.include?(params[:sort]) ? params[:sort] : "relevance"
+      ALLOWED_SORTS.include?(selection.sort) ? selection.sort : "relevance"
     end
   end
 end
