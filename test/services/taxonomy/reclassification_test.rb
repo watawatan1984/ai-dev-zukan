@@ -79,13 +79,129 @@ class Taxonomy::ReclassificationTest < ActiveSupport::TestCase
       assert_equal path, result.path
       assert_equal "ai-dev-zukan.taxonomy-review", payload.fetch("format")
       assert_equal "taxonomy-v2", payload.fetch("taxonomy_version")
-      assert_equal expected_base_ids, payload.fetch("records").reject { |record| record.fetch("required_review") }.map { |record| record.fetch("resource_id") }
-      assert_equal 20, payload.fetch("records").count { |record| record.fetch("kind") == "mcp" && !record.fetch("required_review") }
+      assert_equal expected_base_ids, payload.fetch("records").first(80).map { |record| record.fetch("resource_id") }
+      assert_equal 20, payload.fetch("records").first(80).count { |record| record.fetch("kind") == "mcp" }
       assert_includes payload.fetch("records").select { |record| record.fetch("required_review") }.map { |record| record.fetch("resource_id") }, failed.resource_id
       assert_includes payload.fetch("records").select { |record| record.fetch("required_review") }.map { |record| record.fetch("resource_id") }, low_confidence.resource_id
       assert_includes payload.fetch("records").select { |record| record.fetch("required_review") }.map { |record| record.fetch("resource_id") }, invalid.resource_id
       assert_equal Digest::SHA256.hexdigest(JSON.generate(payload.fetch("records"))), payload.fetch("records_sha256")
       assert candidates.values.all?(&:taxonomy_status_succeeded?)
+    end
+  end
+
+  test "quality report rejects substituted missing extra and duplicate artifact records with recomputed checksums" do
+    resources = Resource.kinds.keys.map do |kind|
+      create_published_resource(kind: kind.to_sym, slug: "artifact-identity-#{kind}")
+    end
+    resources.each { |resource| create_candidate_for(resource) }
+
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "review.json")
+      Taxonomy::ExportReviewSample.call(scope: Resource.where(id: resources.map(&:id)), path:, base_sample_per_kind: 1)
+      original_records = with_review_decisions(JSON.parse(File.read(path)).fetch("records"))
+
+      {
+        "missing artifact record ids" => original_records.drop(1),
+        "extra artifact record ids" => original_records + [ original_records.first.merge("resource_id" => 999_999) ],
+        "duplicate artifact record ids" => original_records + [ original_records.first ],
+        "substituted artifact record ids" => original_records.drop(1) + [ original_records.first.merge("resource_id" => 999_998) ]
+      }.each do |expected_error, records|
+        write_review(path, records)
+
+        report = Taxonomy::QualityReport.call(scope: Resource.where(id: resources.map(&:id)), review_path: path, target_per_kind: 1, base_sample_per_kind: 1)
+
+        refute report.acceptable?, expected_error
+        assert_includes report.errors, expected_error
+      end
+    end
+  end
+
+  test "quality report rejects nil decisions on ordinary base rows" do
+    resource = create_published_resource(kind: :mcp, slug: "nil-base-decision")
+    create_candidate_for(resource)
+
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "review.json")
+      Taxonomy::ExportReviewSample.call(scope: Resource.where(id: resource.id), path:, base_sample_per_kind: 1)
+      records = JSON.parse(File.read(path)).fetch("records")
+      records.first["category_match"] = nil
+      records.first["tag_match"] = true
+      write_review(path, records)
+
+      report = Taxonomy::QualityReport.call(scope: Resource.where(id: resource.id), review_path: path, target_per_kind: 0, base_sample_per_kind: 1)
+
+      refute report.acceptable?
+      assert_includes report.errors, "resource #{resource.id} category_match must be boolean"
+    end
+  end
+
+  test "quality report rejects non decision artifact data tampering with a recomputed checksum" do
+    resource = create_published_resource(kind: :mcp, slug: "tampered-canonical-data")
+    create_candidate_for(resource)
+
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "review.json")
+      Taxonomy::ExportReviewSample.call(scope: Resource.where(id: resource.id), path:, base_sample_per_kind: 1)
+      records = with_review_decisions(JSON.parse(File.read(path)).fetch("records"))
+      records.first["title"] = "Tampered title"
+      write_review(path, records)
+
+      report = Taxonomy::QualityReport.call(scope: Resource.where(id: resource.id), review_path: path, target_per_kind: 0, base_sample_per_kind: 1)
+
+      refute report.acceptable?
+      assert_includes report.errors, "resource #{resource.id} title does not match current candidate"
+    end
+  end
+
+  test "low confidence base candidate exports once as required review and remains in base accuracy" do
+    resource = create_published_resource(kind: :skill, slug: "low-confidence-base")
+    create_candidate_for(resource, confidence: 0.70)
+
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "review.json")
+      Taxonomy::ExportReviewSample.call(scope: Resource.where(id: resource.id), path:, base_sample_per_kind: 1)
+      records = JSON.parse(File.read(path)).fetch("records")
+
+      assert_equal [ resource.id ], records.map { |record| record.fetch("resource_id") }
+      assert_equal true, records.first.fetch("required_review")
+
+      records.first["category_match"] = false
+      records.first["tag_match"] = true
+      write_review(path, records)
+
+      report = Taxonomy::QualityReport.call(scope: Resource.where(id: resource.id), review_path: path, target_per_kind: 0, base_sample_per_kind: 1)
+
+      refute report.acceptable?
+      assert_equal 0.0, report.category_accuracy
+      assert_equal 1.0, report.tag_accuracy
+      assert_includes report.errors, "category accuracy below 90%: 0.0%"
+    end
+  end
+
+  test "quality report rejects omitted or falsely unmarked low confidence required review candidates" do
+    low_resource = create_published_resource(kind: :zenn_article, slug: "low-confidence-required")
+    create_candidate_for(low_resource, confidence: 0.70)
+    ordinary_resource = create_published_resource(kind: :zenn_article, slug: "ordinary-required-sibling")
+    create_candidate_for(ordinary_resource)
+
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "review.json")
+      Taxonomy::ExportReviewSample.call(scope: Resource.where(id: [ low_resource.id, ordinary_resource.id ]), path:, base_sample_per_kind: 1)
+      exported = with_review_decisions(JSON.parse(File.read(path)).fetch("records"))
+      low_record = exported.find { |record| record.fetch("resource_id") == low_resource.id }
+
+      write_review(path, exported.reject { |record| record.fetch("resource_id") == low_resource.id })
+      omitted = Taxonomy::QualityReport.call(scope: Resource.where(id: [ low_resource.id, ordinary_resource.id ]), review_path: path, target_per_kind: 0, base_sample_per_kind: 1)
+
+      refute omitted.acceptable?
+      assert_includes omitted.errors, "missing artifact record ids"
+
+      low_record["required_review"] = false
+      write_review(path, [ low_record ])
+      unmarked = Taxonomy::QualityReport.call(scope: Resource.where(id: [ low_resource.id, ordinary_resource.id ]), review_path: path, target_per_kind: 0, base_sample_per_kind: 1)
+
+      refute unmarked.acceptable?
+      assert_includes unmarked.errors, "resource #{low_resource.id} required_review must be true"
     end
   end
 
@@ -269,5 +385,11 @@ class Taxonomy::ReclassificationTest < ActiveSupport::TestCase
       "records_sha256" => Digest::SHA256.hexdigest(JSON.generate(records)),
       "records" => records
     }))
+  end
+
+  def with_review_decisions(records)
+    records.map do |record|
+      record.merge("category_match" => true, "tag_match" => true)
+    end
   end
 end

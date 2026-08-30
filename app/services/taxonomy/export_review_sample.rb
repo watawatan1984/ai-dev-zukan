@@ -18,7 +18,9 @@ module Taxonomy
     end
 
     def call
-      records = base_records + required_review_records
+      records = review_candidates.map do |candidate|
+        record_for(candidate, required_review: required_review_ids.include?(candidate.resource_id))
+      end
       records_sha256 = Digest::SHA256.hexdigest(JSON.generate(records))
       payload = {
         format: "ai-dev-zukan.taxonomy-review",
@@ -38,26 +40,31 @@ module Taxonomy
 
     attr_reader :scope, :path, :base_sample_per_kind
 
-    def base_records
-      Resource.kinds.keys.flat_map do |kind|
-        candidates_for_kind(kind)
-          .sort_by { |candidate| Digest::SHA256.hexdigest("taxonomy-v2:#{candidate.resource_id}") }
-          .first(base_sample_per_kind)
-          .map { |candidate| record_for(candidate, required_review: false) }
+    def review_candidates
+      candidates_by_resource_id = scoped_candidates.index_by(&:resource_id)
+      (base_resource_ids + required_review_ids).uniq.filter_map { |resource_id| candidates_by_resource_id[resource_id] }
+    end
+
+    def base_resource_ids
+      @base_resource_ids ||= Resource.kinds.keys.flat_map do |kind|
+        candidates_for_kind(kind).first(base_sample_per_kind).map(&:resource_id)
       end
     end
 
-    def required_review_records
-      scope.includes(:current_revision, :revisions).flat_map do |resource|
-        candidate = taxonomy_candidate_for(resource)
-        next [] unless candidate && required_review?(candidate)
-
-        [ record_for(candidate, required_review: true) ]
+    def required_review_ids
+      @required_review_ids ||= scoped_candidates.filter_map do |candidate|
+        candidate.resource_id if required_review?(candidate)
       end
     end
 
     def candidates_for_kind(kind)
-      scope.where(kind:).includes(:current_revision, :revisions).filter_map do |resource|
+      scoped_candidates
+        .select { |candidate| candidate.resource.kind == kind }
+        .sort_by { |candidate| Digest::SHA256.hexdigest("taxonomy-v2:#{candidate.resource_id}") }
+    end
+
+    def scoped_candidates
+      @scoped_candidates ||= scope.includes(:current_revision, :revisions).filter_map do |resource|
         taxonomy_candidate_for(resource)
       end
     end
