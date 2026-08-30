@@ -1,6 +1,10 @@
 require "test_helper"
 
 class InitialCatalog::QualityReportTest < ActiveSupport::TestCase
+  setup do
+    Taxonomy::SyncVocabulary.call
+  end
+
   test "accepts one complete Japanese summary per kind" do
     InitialCatalog::Bootstrap::SOURCE_KINDS.values.each do |kind|
       create_summarized_resource(kind:)
@@ -10,7 +14,26 @@ class InitialCatalog::QualityReportTest < ActiveSupport::TestCase
 
     assert report.acceptable?
     assert_equal 1, report.counts.dig("mcp", :summarized)
+    assert_equal 0, report.counts.dig("mcp", :taxonomy_v2_candidates)
     assert_equal({ "test-model" => 1 }, report.counts.dig("qiita_article", :models))
+  end
+
+  test "reports taxonomy v2 candidate readiness without changing initial release acceptability" do
+    resource = create_summarized_resource(kind: :mcp)
+    current = resource.revisions.last
+    current.update!(review_status: :review_pending, suggested_category_slugs: [ "coding-development" ], suggested_tag_slugs: [ "ruby", "testing" ], taxonomy_status: :succeeded)
+    Editorial::ApproveAndPublish.call(revision: current, reviewer: users(:admin))
+    Taxonomy::BuildReclassificationCandidate.call(resource: resource.reload).update!(
+      suggested_category_slugs: [ "automation-integration" ],
+      suggested_tag_slugs: [ "ruby", "api-integration" ],
+      taxonomy_status: :succeeded,
+      taxonomy_confidence: 0.95
+    )
+
+    report = InitialCatalog::QualityReport.call(target: 1)
+
+    assert_equal 1, report.counts.dig("mcp", :taxonomy_v2_candidates)
+    assert_equal 1, report.counts.dig("mcp", :taxonomy_v2_succeeded)
   end
 
   test "rejects a catalog with a non Japanese summary" do
@@ -49,5 +72,6 @@ class InitialCatalog::QualityReportTest < ActiveSupport::TestCase
       summary_status: :succeeded,
       review_status: :review_pending
     )
+    resource
   end
 end

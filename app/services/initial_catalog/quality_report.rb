@@ -1,3 +1,5 @@
+require "digest"
+
 module InitialCatalog
   class QualityReport
     JAPANESE_TEXT = /[ぁ-んァ-ヶ一-龠々]/
@@ -49,6 +51,8 @@ module InitialCatalog
           overlong_summaries: summaries.count { |summary| summary.to_s.length > 180 },
           blank_excerpts: summarized.where(source_excerpt: [ nil, "" ]).count,
           missing_authors: summarized.where(author_name: [ nil, "" ]).count,
+          taxonomy_v2_candidates: taxonomy_v2_candidates(resource_scope),
+          taxonomy_v2_succeeded: taxonomy_v2_succeeded(resource_scope),
           models: summarized.group(:ai_model).count
         }
       end.transform_keys(&:to_s)
@@ -58,6 +62,26 @@ module InitialCatalog
       InitialCatalog::LatestRevisions
         .for_kind(kind)
         .where(summary_status: :succeeded)
+    end
+
+    def taxonomy_v2_candidates(resource_scope)
+      resource_scope.includes(:current_revision, :revisions).count do |resource|
+        taxonomy_v2_candidate_for(resource).present?
+      end
+    end
+
+    def taxonomy_v2_succeeded(resource_scope)
+      resource_scope.includes(:current_revision, :revisions).count do |resource|
+        taxonomy_v2_candidate_for(resource)&.taxonomy_status_succeeded?
+      end
+    end
+
+    def taxonomy_v2_candidate_for(resource)
+      current = resource.current_revision
+      return unless current
+
+      fingerprint = Digest::SHA256.hexdigest("#{current.source_fingerprint}:taxonomy-v2")
+      resource.revisions.find { |revision| revision.source_fingerprint == fingerprint }
     end
   end
 end

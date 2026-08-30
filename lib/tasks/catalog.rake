@@ -110,4 +110,78 @@ namespace :catalog do
       )
     end
   end
+
+  namespace :taxonomy do
+    def taxonomy_review_path
+      ENV.fetch("TAXONOMY_REVIEW_PATH", Rails.root.join("db/seed_data/taxonomy_review.json"))
+    end
+
+    desc "Synchronize the controlled taxonomy vocabulary"
+    task sync: :environment do
+      Taxonomy::SyncVocabulary.call
+      puts JSON.pretty_generate(
+        taxonomy_version: Taxonomy::Registry.version,
+        categories: Taxonomy::Registry.category_slugs.size,
+        tags: Taxonomy::Registry.tag_slugs.size
+      )
+    end
+
+    desc "Create taxonomy-v2 draft candidates and enqueue classification"
+    task enqueue: :environment do
+      result = Taxonomy::EnqueueReclassification.call(scope: Resource.publicly_visible)
+      puts JSON.pretty_generate(
+        taxonomy_version: Taxonomy::BuildReclassificationCandidate::TAXONOMY_VERSION,
+        enqueued_resource_ids: result.resource_ids,
+        enqueued_revision_ids: result.revision_ids
+      )
+    end
+
+    desc "Report taxonomy-v2 reclassification quality"
+    task report: :environment do
+      report = Taxonomy::QualityReport.call(
+        scope: Resource.publicly_visible,
+        review_path: taxonomy_review_path
+      )
+      puts JSON.pretty_generate(
+        taxonomy_version: Taxonomy::BuildReclassificationCandidate::TAXONOMY_VERSION,
+        acceptable: report.acceptable?,
+        target_per_kind: report.target_per_kind,
+        category_accuracy: report.category_accuracy,
+        tag_accuracy: report.tag_accuracy,
+        counts: report.counts,
+        errors: report.errors
+      )
+      abort "Taxonomy v2 quality gate failed" unless report.acceptable?
+    end
+
+    desc "Export the deterministic taxonomy-v2 review sample"
+    task export_review: :environment do
+      result = Taxonomy::ExportReviewSample.call(
+        scope: Resource.publicly_visible,
+        path: taxonomy_review_path
+      )
+      puts JSON.pretty_generate(
+        path: result.path,
+        records_sha256: result.records_sha256,
+        record_count: result.record_count
+      )
+    end
+
+    desc "Publish taxonomy-v2 reclassification with an explicit release confirmation"
+    task publish: :environment do
+      abort "Set CONFIRM=publish-taxonomy-v2 to publish taxonomy v2" unless ENV["CONFIRM"] == Taxonomy::PublishReclassification::CONFIRMATION
+
+      reviewer = InitialCatalog::ReleaseReviewer.call
+      result = Taxonomy::PublishReclassification.call(
+        reviewer:,
+        confirmation: ENV["CONFIRM"],
+        review_path: taxonomy_review_path
+      )
+      puts JSON.pretty_generate(
+        taxonomy_version: Taxonomy::BuildReclassificationCandidate::TAXONOMY_VERSION,
+        reviewer: reviewer.email,
+        published_resource_ids: result.published_resource_ids
+      )
+    end
+  end
 end
