@@ -7,10 +7,11 @@ module Sources
       @token = token
     end
 
-    def search_repositories(query:, limit:)
+    def search_repositories(query:, limit:, page: 1)
+      per_page = limit.to_i.clamp(1, 100)
       payload = http.get_json(
         "#{API_ROOT}/search/repositories",
-        params: { q: query, sort: "stars", order: "desc", per_page: limit },
+        params: { q: query, sort: "stars", order: "desc", per_page: per_page, page: page.to_i.clamp(1, 10) },
         headers: headers
       )
       payload.fetch("items")

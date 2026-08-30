@@ -18,7 +18,7 @@ module Sources
     end
 
     def fetch(source_name, limit: ENV.fetch("SOURCE_IMPORT_LIMIT", 10).to_i)
-      catalog(source_name).fetch(limit: limit.to_i.clamp(1, 30))
+      catalog(source_name).fetch(limit: limit.to_i.clamp(1, 100))
     end
   end
 end

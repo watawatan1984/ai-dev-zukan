@@ -9,6 +9,8 @@
 
 プロジェクト直下の`env`は任意のローカル機密ファイルとしてDocker Composeが読み込む。Gitでは除外される。NVIDIA設定は標準名`NVIDIA_API_KEY` / `NVIDIA_NIM_MODEL`を優先し、未定義の場合は`NVIDIA_API_KEY1` / `NVIDIA_AI_MODEL1`を主設定として利用する。番号2以降は自動ローテーションせず、Renderへ登録するキーは明示的に1本を選ぶ。
 
+初期データは`bin/rails catalog:bootstrap`で4種類各100件を取得・要約する。`BOOTSTRAP_NVIDIA_MODEL`を指定した場合だけ初期投入用モデルを上書きでき、各Revisionには実際に使ったモデル名が保存される。
+
 ## 起動
 
 ```powershell

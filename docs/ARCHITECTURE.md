@@ -26,6 +26,12 @@ RailsのSSRモノリスを中心にする。ブラウザーと管理者はCloudf
 
 Qiitaは公式API、ZennはRSS、GitHubは公式REST APIを利用する。記事本文とREADME全文は永続化しない。DBには上限付き出典抜粋、AI要約、出典URL、生成条件だけを保存する。
 
+初期カタログはMCP・Skills・Zenn・Qiitaを各100件収集する。GitHubは関連topicのスター順、Qiitaは検索条件を満たす記事、ZennはトレンドとAI・主要言語・Web開発トピックの公式RSSをラウンドロビンで取得する。取得結果は正規化URLと外部IDで重複排除し、NVIDIA NIMのモデル名・プロンプト版・入力ハッシュを要約Revisionへ記録する。
+
+MCPは単にMCPへ対応するクライアントやSDKを混在させず、リポジトリ名がMCPサーバー実装を示す候補へ限定する。自動候補の境界事例は管理者レビュー対象とし、除外時は削除せずアーカイブする。
+
+SkillsはGitHub topicだけで採用せず、リポジトリ名または説明に`skill` / `SKILL.md`が明示された候補へ限定する。汎用アプリがAgent Skills topicを持つだけの場合は初期候補から除外する。
+
 ## デプロイ制約
 
 Render Freeの停止を前提に、ジョブは短く、再実行可能かつ冪等にする。Solid Queueは単一Web Service内で低並列に実行する。GASはJST 10:00–20:59に10分間隔で署名付きScheduler tickを送り、同一時刻枠・同一タスクの一意制約で取込を1時間に1回だけ投入する。メールはRender Freeで遮断されるSMTPではなくResend HTTPS APIを使う。

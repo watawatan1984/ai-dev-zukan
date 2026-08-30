@@ -35,4 +35,25 @@ class Ingestion::RefreshSourceTest < ActiveSupport::TestCase
       assert run.completed_at.present?
     end
   end
+
+  test "accepts a one hundred item bootstrap batch" do
+    catalog = Class.new do
+      attr_reader :requested_limit
+
+      def fetch(limit:)
+        @requested_limit = limit
+        []
+      end
+    end.new
+
+    run = Ingestion::RefreshSource.call(
+      source_name: "github_mcp",
+      catalog: catalog,
+      limit: 100,
+      enqueue_summaries: false
+    )
+
+    assert_equal 100, catalog.requested_limit
+    assert_equal 0, run.fetched_count
+  end
 end

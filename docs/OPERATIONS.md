@@ -27,6 +27,28 @@ Railsはtimestampと空bodyをHMAC-SHA256で検証し、5分を超えるリプ�
 
 候補はAI要約後も自動公開されない。管理者が出典抜粋とAI要約を確認し、必要なら編集してから「承認して公開」を実行する。
 
+### 初期カタログ400件
+
+初回デプロイ後、GitHubとQiitaの読み取りトークン、NVIDIA設定を登録してから次を一度実行する。途中停止しても外部ID・入力fingerprint・要約状態を基準に再開できる。
+
+```powershell
+docker compose run --rm -e BOOTSTRAP_PER_KIND=100 -e BOOTSTRAP_AI_CONCURRENCY=3 web bin/rails catalog:bootstrap
+```
+
+外部取得済みで、失敗したAI要約だけを再処理する場合は`BOOTSTRAP_SKIP_IMPORT=1`を追加する。
+
+品質ゲートは`bin/rails catalog:bootstrap:report`で実行する。180文字超過または日本語でない要約がある場合は`bin/rails catalog:bootstrap:repair`を実行し、続けて`BOOTSTRAP_SKIP_IMPORT=1`で再要約する。
+
+GitHubはMCPとSkillsをスター順に各100件、Qiitaは`QIITA_IMPORT_QUERY`、Zennはトレンドと複数の公式トピックRSSから各100件を取得する。GitHub README取得数は`GITHUB_README_FETCH_LIMIT`で抑え、それ以外はリポジトリ説明・言語・topicsを要約根拠にする。
+
+GitHub選定条件を変更した既存DBでは、`catalog:bootstrap:curate_mcp`と`catalog:bootstrap:curate_skill`を実行する。現在の選定100件に含まれない未公開候補を削除せずアーカイブし、以前アーカイブした候補が再選定された場合は未公開へ戻す。
+
+投入直後は4種類とも`review_pending`であり公開されない。管理者が品質レポートと管理画面のサンプルを確認した後、次の明示コマンドで各100件を監査ログ付きで公開する。
+
+```powershell
+docker compose run --rm -e ADMIN_EMAIL=admin@example.com -e CONFIRM=publish web bin/rails catalog:bootstrap:publish
+```
+
 ## 主要な運用確認
 
 ```powershell

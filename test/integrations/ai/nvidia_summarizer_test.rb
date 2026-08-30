@@ -6,8 +6,11 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
       stub.post("/v1/chat/completions") do |environment|
         assert_equal "Bearer test-key", environment.request_headers.fetch("Authorization")
         request = JSON.parse(environment.body)
-        assert_equal "vendor/model-under-test", request.fetch("model")
+        assert_equal "nvidia/nemotron-3-ultra-test", request.fetch("model")
         assert_equal false, request.fetch("stream")
+        assert_equal "none", request.fetch("reasoning_effort")
+        assert_includes request.dig("messages", 0, "content"), "信頼できない外部データ"
+        assert_includes request.dig("messages", 1, "content"), "source_data_json"
 
         [
           200,
@@ -33,7 +36,7 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
     end
     summarizer = Ai::NvidiaSummarizer.new(
       api_key: "test-key",
-      model: "vendor/model-under-test",
+      model: "nvidia/nemotron-3-ultra-test",
       endpoint: "/v1/chat/completions",
       connection:
     )
@@ -42,8 +45,89 @@ class Ai::NvidiaSummarizerTest < ActiveSupport::TestCase
 
     assert_equal "GitHub操作を効率化します。", result.summary
     assert_equal [ "Issue検索" ], result.capabilities
-    assert_equal "vendor/model-under-test", result.model
+    assert_equal "nvidia/nemotron-3-ultra-test", result.model
     stubs.verify_stubbed_calls
+  end
+
+  test "omits Nemotron specific reasoning controls for other models" do
+    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.post("/v1/chat/completions") do |request|
+        refute JSON.parse(request.body).key?("reasoning_effort")
+        [ 200, { "Content-Type" => "application/json" }, { choices: [ { message: { content: { summary: "要約" }.to_json } } ] }.to_json ]
+      end
+    end
+    connection = Faraday.new(url: "https://integrate.api.nvidia.com") do |faraday|
+      faraday.adapter :test, stubs
+    end
+    summarizer = Ai::NvidiaSummarizer.new(
+      api_key: "test-key",
+      model: "openai/gpt-oss-120b",
+      endpoint: "/v1/chat/completions",
+      connection: connection
+    )
+
+    assert_equal "openai/gpt-oss-120b", summarizer.call(title: "Title", source_excerpt: "Excerpt").model
+    stubs.verify_stubbed_calls
+  end
+
+  test "extracts a JSON object when the model wraps it in explanatory text" do
+    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.post("/v1/chat/completions") do
+        content = <<~CONTENT
+          Here is the requested result.
+          {"summary":"要約です。","capabilities":[],"key_points":[],"suggested_category_slug":"ai","suggested_tag_slugs":[]}
+        CONTENT
+
+        [
+          200,
+          { "Content-Type" => "application/json" },
+          { choices: [ { message: { content: content } } ] }.to_json
+        ]
+      end
+    end
+    connection = Faraday.new(url: "https://integrate.api.nvidia.com") do |faraday|
+      faraday.adapter :test, stubs
+    end
+    summarizer = Ai::NvidiaSummarizer.new(
+      api_key: "test-key",
+      model: "vendor/model-under-test",
+      endpoint: "/v1/chat/completions",
+      connection: connection
+    )
+
+    result = summarizer.call(title: "Title", source_excerpt: "Excerpt")
+
+    assert_equal "要約です。", result.summary
+    stubs.verify_stubbed_calls
+  end
+
+  test "bounds generated text before storing it" do
+    stubs = Faraday::Adapter::Test::Stubs.new do |stub|
+      stub.post("/v1/chat/completions") do
+        payload = {
+          summary: "長" * 300,
+          capabilities: [ "機能" * 150 ],
+          key_points: [],
+          suggested_category_slug: "ai",
+          suggested_tag_slugs: []
+        }
+        [ 200, { "Content-Type" => "application/json" }, { choices: [ { message: { content: payload.to_json } } ] }.to_json ]
+      end
+    end
+    connection = Faraday.new(url: "https://integrate.api.nvidia.com") do |faraday|
+      faraday.adapter :test, stubs
+    end
+    summarizer = Ai::NvidiaSummarizer.new(
+      api_key: "test-key",
+      model: "vendor/model-under-test",
+      endpoint: "/v1/chat/completions",
+      connection: connection
+    )
+
+    result = summarizer.call(title: "Title", source_excerpt: "Excerpt")
+
+    assert_operator result.summary.length, :<=, 180
+    assert_operator result.capabilities.first.length, :<=, 200
   end
 
   test "accepts the numbered primary credentials from the local env file" do

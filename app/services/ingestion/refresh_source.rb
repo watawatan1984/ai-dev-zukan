@@ -1,13 +1,19 @@
 module Ingestion
   class RefreshSource
-    def self.call(source_name:, catalog:, limit: ENV.fetch("SOURCE_IMPORT_LIMIT", 10).to_i)
-      new(source_name:, catalog:, limit:).call
+    def self.call(
+      source_name:,
+      catalog:,
+      limit: ENV.fetch("SOURCE_IMPORT_LIMIT", 10).to_i,
+      enqueue_summaries: true
+    )
+      new(source_name:, catalog:, limit:, enqueue_summaries:).call
     end
 
-    def initialize(source_name:, catalog:, limit:)
+    def initialize(source_name:, catalog:, limit:, enqueue_summaries:)
       @source_name = source_name
       @catalog = catalog
-      @limit = limit.to_i.clamp(1, 30)
+      @limit = limit.to_i.clamp(1, 100)
+      @enqueue_summaries = enqueue_summaries
     end
 
     def call
@@ -36,9 +42,10 @@ module Ingestion
 
     private
 
-    attr_reader :source_name, :catalog, :limit
+    attr_reader :source_name, :catalog, :limit, :enqueue_summaries
 
     def enqueue_summary(result)
+      return unless enqueue_summaries
       return unless result.status == :created_revision
       return if result.revision.source_excerpt.blank?
 
