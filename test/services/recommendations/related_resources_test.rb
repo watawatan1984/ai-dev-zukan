@@ -62,6 +62,36 @@ class Recommendations::RelatedResourcesTest < ActiveSupport::TestCase
     refute_includes recommendations.map(&:resource), legacy_match
   end
 
+  test "does not drop the strongest controlled match after one hundred candidates" do
+    current = publish_resource(
+      slug: "current-large-catalog",
+      title: "Current Large Catalog",
+      kind: :mcp,
+      categories: %w[coding-development automation-integration],
+      tags: %w[ruby ruby-on-rails]
+    )
+    101.times do |index|
+      publish_resource(
+        slug: "weak-large-catalog-#{index}",
+        title: "Weak Large Catalog #{index}",
+        kind: :mcp,
+        categories: %w[coding-development],
+        tags: %w[ruby]
+      )
+    end
+    strongest = publish_resource(
+      slug: "strongest-large-catalog",
+      title: "Strongest Large Catalog",
+      kind: :skill,
+      categories: %w[coding-development automation-integration],
+      tags: %w[ruby ruby-on-rails]
+    )
+
+    recommendations = Recommendations::RelatedResources.call(resource: current, limit: 1)
+
+    assert_equal strongest, recommendations.first.resource
+  end
+
   test "ranks shared tags and kind with an explainable reason" do
     current = publish_resource(slug: "current-mcp", title: "Current MCP", kind: :mcp, tags: [ "mcp" ])
     related = publish_resource(slug: "related-mcp", title: "Related MCP", kind: :mcp, tags: [ "mcp" ])

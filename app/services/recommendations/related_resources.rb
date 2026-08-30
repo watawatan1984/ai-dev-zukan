@@ -40,7 +40,6 @@ module Recommendations
       scope = Resource.publicly_visible
         .where.not(id: resource.id)
         .includes(:current_revision, :controlled_categories, :controlled_tags)
-        .limit(100)
 
       user ? scope.where.not(id: user.hidden_resources.select(:resource_id)) : scope
     end

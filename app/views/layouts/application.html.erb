@@ -5,8 +5,9 @@
     <meta name="description" content="<%= content_for(:description) || "MCP、AI Skills、Zenn・Qiitaの技術記事を、出典付きAI要約から横断検索できる開発者向けライブラリーです。" %>">
     <meta property="og:title" content="<%= content_for(:title) || "AI開発図鑑" %>">
     <meta property="og:description" content="<%= content_for(:description) || "MCP・Skills・技術記事を出典付きAI要約から横断検索。" %>">
+    <% canonical_url = content_for(:canonical).presence || @canonical_url %>
     <meta property="og:type" content="<%= content_for?(:canonical) ? "article" : "website" %>">
-    <meta property="og:url" content="<%= content_for(:canonical) || request.original_url %>">
+    <meta property="og:url" content="<%= canonical_url || request.original_url %>">
     <meta property="og:image" content="<%= "#{request.base_url}/icon.png" %>">
     <meta name="twitter:card" content="summary_large_image">
     <% robots_content = content_for(:robots).presence || @robots %>
@@ -16,7 +17,6 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
-    <% canonical_url = content_for(:canonical).presence || @canonical_url %>
     <%= tag.link rel: "canonical", href: canonical_url if canonical_url.present? %>
     <script nonce="<%= content_security_policy_nonce %>">
       (() => {

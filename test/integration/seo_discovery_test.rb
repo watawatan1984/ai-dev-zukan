@@ -13,6 +13,7 @@ class SeoDiscoveryTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "meta[name='robots']", count: 0
     assert_select "link[rel='canonical'][href='#{resources_url}']"
+    assert_select "meta[property='og:url'][content='#{resources_url}']"
   end
 
   test "filtered resource listing is noindex follow with a bare canonical" do
@@ -23,6 +24,7 @@ class SeoDiscoveryTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "meta[name='robots'][content='noindex, follow']"
     assert_select "link[rel='canonical'][href='#{resources_url}']"
+    assert_select "meta[property='og:url'][content='#{resources_url}']"
   end
 
   test "search resource listing is noindex follow" do
@@ -43,6 +45,9 @@ class SeoDiscoveryTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "meta[name='robots']", count: 0
     assert_select "link[rel='canonical'][href='#{resources_url}']"
+    assert_select "meta[property='og:url'][content='#{resources_url}']"
+    refute_includes response.body, "unknown-tag"
+    refute_includes response.body, "junk=1"
   end
 
   test "sitemap includes only published resource URLs" do
@@ -69,6 +74,7 @@ class SeoDiscoveryTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "link[rel='canonical'][href='#{resource_url(resource.slug)}']"
+    assert_select "meta[property='og:url'][content='#{resource_url(resource.slug)}']"
     assert_select "script[type='application/ld+json']"
   end
 
