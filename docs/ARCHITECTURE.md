@@ -2,7 +2,7 @@
 
 ## システム構成
 
-RailsのSSRモノリスを中心にする。ブラウザーと管理者はCloudflare経由でRender上のRailsへ接続し、永続データはNeon PostgreSQL、プロジェクト所有画像はCloudflare R2へ保存する。外部取得とAI要約はSolid Queueで非同期実行する。
+RailsのSSRモノリスを中心にする。ブラウザーと管理者はCloudflare経由でRender上のRailsへ接続し、永続データはSupabase PostgreSQL、プロジェクト所有画像はCloudflare R2へ保存する。外部取得とAI要約はSolid Queueで非同期実行する。
 
 ## 主要Module
 
@@ -32,8 +32,8 @@ MCPは単にMCPへ対応するクライアントやSDKを混在させず、リ�
 
 SkillsはGitHub topicだけで採用せず、名称が複数Skillsの配布を示すか、説明の先頭でAgent Skill / Claude Code Skill / Codex Skill / `SKILL.md`が明示された候補へ限定する。単数`skill`という名前だけでは採用しない。Skillのbuilder、scanner、recorder、評価runner、管理アプリ、仕様書、リンク集・directoryなど、単体または複数のSkill本体を配布しないRepositoryは初期候補から除外する。
 
-検証済み初期カタログはAPIキーを含まないチェックサム付きArtifactとしてRepositoryへ同梱する。Renderの一回限りの初期デプロイhookはこれをNeonへ冪等投入するが、Revisionはレビュー待ちのまま維持し、自動公開しない。
+検証済み初期カタログはAPIキーを含まないチェックサム付きArtifactとしてRepositoryへ同梱する。Renderの一回限りの初期デプロイhookはこれをSupabaseへ冪等投入するが、Revisionはレビュー待ちのまま維持し、自動公開しない。
 
 ## デプロイ制約
 
-Render Freeの停止を前提に、ジョブは短く、再実行可能かつ冪等にする。Solid Queueは単一Web Service内で低並列に実行する。GASはJST 10:00–20:59に10分間隔で署名付きScheduler tickを送り、同一時刻枠・同一タスクの一意制約で取込を1時間に1回だけ投入する。メールはRender Freeで遮断されるSMTPではなくResend HTTPS APIを使う。
+Render Freeの停止を前提に、ジョブは短く、再実行可能かつ冪等にする。Solid Queueはアプリと同じSupabase DBを使い、単一Web Service内で低並列に実行する。GASはJST 10:00–20:59に10分間隔で署名付きScheduler tickを送り、各tickで`SELECT 1`を実行してDB疎通を確認する。同一時刻枠・同一タスクの一意制約により、取込は1時間に1回だけ投入する。メールはRender Freeで遮断されるSMTPではなくResend HTTPS APIを使う。

@@ -12,7 +12,7 @@ Status: accepted
 - 人気度は媒体別の対数正規化スコアで並び替え、カードには取得元のスター・いいね実数を表示する。
 - NVIDIAのモデルは`NVIDIA_NIM_MODEL`で外部設定し、リポジトリでは固定しない。
 - Render Freeの制約に合わせ、Solid QueueをPumaから監督し、GASで10:00–20:59 JSTに10分間隔の署名付きtickを送る。
-- メールはSMTPではなくResend HTTPS API、画像はCloudflare R2、DBはNeon PostgreSQLを使う。
+- メールはSMTPではなくResend HTTPS API、画像はCloudflare R2を使う。DBのNeon採用は`0003-supabase-single-database.md`でSupabaseへ置き換えた。
 - Render停止中のrobots全拒否を避けるため、`/robots.txt`だけはCloudflare Workerから返す。
 
 ## Consequences

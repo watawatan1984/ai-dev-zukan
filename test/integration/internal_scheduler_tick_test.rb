@@ -13,6 +13,8 @@ class InternalSchedulerTickTest < ActionDispatch::IntegrationTest
           post internal_scheduler_tick_path, params: "", headers: headers
           assert_response :accepted
           assert_equal "enqueued", response.parsed_body.fetch("status")
+          assert_equal "reachable", response.parsed_body.dig("database", "status")
+          assert_predicate response.parsed_body.dig("database", "checked_at"), :present?
 
           post internal_scheduler_tick_path, params: "", headers: headers
           assert_response :success
@@ -35,6 +37,20 @@ class InternalSchedulerTickTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a database failure returns a structured service unavailable response" do
+    with_scheduler_secret("test-scheduler-secret") do
+      with_database_keepalive_failure(ActiveRecord::ConnectionNotEstablished.new("database offline")) do
+        post internal_scheduler_tick_path,
+          params: "",
+          headers: signed_headers(ENV.fetch("GAS_SCHEDULER_SECRET"))
+      end
+
+      assert_response :service_unavailable
+      assert_equal({ "error" => "database_unreachable" }, response.parsed_body)
+      assert_no_enqueued_jobs only: CatalogRefreshJob
+    end
+  end
+
   private
 
   def signed_headers(secret)
@@ -52,5 +68,14 @@ class InternalSchedulerTickTest < ActionDispatch::IntegrationTest
     yield
   ensure
     ENV["GAS_SCHEDULER_SECRET"] = previous
+  end
+
+  def with_database_keepalive_failure(error)
+    singleton = Operations::DatabaseKeepalive.singleton_class
+    original = Operations::DatabaseKeepalive.method(:call)
+    singleton.define_method(:call) { |**| raise error }
+    yield
+  ensure
+    singleton.define_method(:call, original)
   end
 end

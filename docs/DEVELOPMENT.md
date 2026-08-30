@@ -9,7 +9,7 @@
 
 プロジェクト直下の`env`は任意のローカル機密ファイルとしてDocker Composeが読み込む。Gitでは除外される。NVIDIA設定は標準名`NVIDIA_API_KEY` / `NVIDIA_NIM_MODEL`を優先し、未定義の場合は`NVIDIA_API_KEY1` / `NVIDIA_AI_MODEL1`を主設定として利用する。番号2以降は自動ローテーションせず、Renderへ登録するキーは明示的に1本を選ぶ。
 
-初期データは`bin/rails catalog:bootstrap`で4種類各100件のSourceImportJobを投入し、外部取得とNVIDIA要約をSolid Queueで処理する。要約モデルは`NVIDIA_NIM_MODEL`で明示し、各Revisionには実際に使ったモデル名が保存される。検証済み400件は`catalog:snapshot:export`で移送用Artifactにし、Renderの初回デプロイhookからNeonへ投入する。
+初期データは`bin/rails catalog:bootstrap`で4種類各100件のSourceImportJobを投入し、外部取得とNVIDIA要約をSolid Queueで処理する。要約モデルは`NVIDIA_NIM_MODEL`で明示し、各Revisionには実際に使ったモデル名が保存される。検証済み400件は`catalog:snapshot:export`で移送用Artifactにし、Renderの初回デプロイhookからSupabaseへ投入する。本番のSolid Queueはアプリと同じPostgreSQL DBを使う。
 
 ## 起動
 

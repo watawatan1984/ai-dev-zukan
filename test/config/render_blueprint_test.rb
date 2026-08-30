@@ -13,4 +13,14 @@ class RenderBlueprintTest < ActiveSupport::TestCase
       "envVarKey" => "RENDER_EXTERNAL_HOSTNAME"
     }, app_host.fetch("fromService"))
   end
+
+  test "uses one Supabase database connection" do
+    blueprint = YAML.safe_load_file(Rails.root.join("render.yaml"))
+    service = blueprint.fetch("services").find { |entry| entry.fetch("name") == "ai-dev-zukan" }
+    database_keys = service.fetch("envVars").filter_map do |entry|
+      entry.fetch("key") if entry.fetch("key").end_with?("DATABASE_URL")
+    end
+
+    assert_equal [ "DATABASE_URL" ], database_keys
+  end
 end

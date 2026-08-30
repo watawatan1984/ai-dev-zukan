@@ -18,8 +18,6 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
-      - key: QUEUE_DATABASE_URL
-        sync: false
       - key: SOLID_QUEUE_IN_PUMA
         value: "1"
       - key: RAILS_MAX_THREADS

@@ -24,7 +24,7 @@ Ruby on Railsの転職・副業案件獲得用ポートフォリオを主目的�
 - GitHub API、Qiita API、Zenn RSSからの自動取込
 - NVIDIA NIMによるバックエンド要約
 - SSR、canonical、sitemap、OGP、構造化データ
-- Render、Neon、Cloudflare R2/DNS、Resend、GAS監視
+- Render、Supabase、Cloudflare R2/DNS、Resend、GAS監視
 
 ## MVP対象外
 

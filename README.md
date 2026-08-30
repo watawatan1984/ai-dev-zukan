@@ -18,7 +18,7 @@ MCP・Skills・技術記事を、出典付きAI要約から探せる日本語の
 - Ruby 3.4 / Rails 8.1
 - Hotwire, Stimulus, Tailwind CSS
 - PostgreSQL / Solid Queue
-- Render / Neon / Cloudflare R2
+- Render / Supabase / Cloudflare R2
 - Devise / Google OAuth
 - NVIDIA NIM
 - Resend HTTPS API
