@@ -12,27 +12,41 @@ module Search
       new(selection: selection, user: user).call
     end
 
-    def initialize(selection:, user: nil)
+    def self.relation(selection:, user: nil, except: nil)
+      new(selection: selection, user: user, except: except).relation
+    end
+
+    def initialize(selection:, user: nil, except: nil)
       @selection = selection
       @user = user
+      @except = Array(except).map(&:to_sym)
     end
 
     def call
-      relation = Resource.publicly_visible.includes(:current_revision)
+      order(relation.includes(:current_revision))
+    end
+
+    def relation
+      relation = Resource.publicly_visible
       relation = exclude_hidden(relation)
       relation = filter_content_type_and_source(relation)
       relation = filter_category(relation)
       relation = filter_tag(relation)
       relation = filter_period(relation)
-      relation = filter_query(relation)
-      order(relation)
+      filter_query(relation)
     end
 
     private
 
-    attr_reader :selection, :user
+    attr_reader :selection, :user, :except
 
     def filter_content_type_and_source(relation)
+      relation = filter_content_type(relation) unless except.include?(:content_types)
+      relation = filter_source(relation) unless except.include?(:sources)
+      relation
+    end
+
+    def filter_content_type(relation)
       return relation if selection.content_types.empty?
 
       table = Resource.arel_table
@@ -41,17 +55,29 @@ module Search
       branches << table[:kind].eq(Resource.kinds.fetch("skill")) if selection.content_types.include?("skill")
       if selection.content_types.include?("blog")
         blog_branch = table[:kind].in([ Resource.kinds.fetch("zenn_article"), Resource.kinds.fetch("qiita_article") ])
-        if selection.sources.any?
-          source_values = selection.sources.map { |source| Resource.source_providers.fetch(source) }
-          blog_branch = blog_branch.and(table[:source_provider].in(source_values))
-        end
         branches << blog_branch
       end
 
       relation.where(branches.reduce { |left, right| left.or(right) })
     end
 
+    def filter_source(relation)
+      return relation if selection.sources.empty? || !selection.content_types.include?("blog")
+
+      table = Resource.arel_table
+      non_blog_kinds = []
+      non_blog_kinds << Resource.kinds.fetch("mcp") if selection.content_types.include?("mcp")
+      non_blog_kinds << Resource.kinds.fetch("skill") if selection.content_types.include?("skill")
+      source_values = selection.sources.map { |source| Resource.source_providers.fetch(source) }
+      blog_branch = table[:kind].in([ Resource.kinds.fetch("zenn_article"), Resource.kinds.fetch("qiita_article") ])
+        .and(table[:source_provider].in(source_values))
+
+      predicate = non_blog_kinds.any? ? table[:kind].in(non_blog_kinds).or(blog_branch) : blog_branch
+      relation.where(predicate)
+    end
+
     def filter_category(relation)
+      return relation if except.include?(:category_slugs)
       return relation if selection.category_slugs.empty?
 
       matching_ids = Resource.joins(:controlled_categories)
@@ -61,6 +87,7 @@ module Search
     end
 
     def filter_tag(relation)
+      return relation if except.include?(:tag_slugs)
       return relation if selection.tag_slugs.empty?
 
       matching_ids = Resource.joins(:controlled_tags)

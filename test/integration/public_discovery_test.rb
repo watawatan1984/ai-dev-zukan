@@ -46,9 +46,42 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Multi Blog", count: 0
   end
 
+  test "index search uses a bounded number of SQL queries with facet counts" do
+    publish_resource(
+      slug: "query-count-mcp",
+      title: "Query Count MCP",
+      summary: "MCPです。",
+      kind: :mcp,
+      source_provider: :github,
+      categories: [ "coding-development" ],
+      tags: [ "ruby" ]
+    )
+    publish_resource(
+      slug: "query-count-zenn",
+      title: "Query Count Zenn",
+      summary: "Zenn記事です。",
+      kind: :zenn_article,
+      source_provider: :zenn,
+      categories: [ "coding-development" ],
+      tags: [ "ruby" ]
+    )
+
+    sql_count = count_index_sql do
+      get resources_path, params: {
+        content_types: %w[mcp blog],
+        sources: %w[zenn],
+        category_slugs: %w[coding-development],
+        tag_slugs: %w[ruby]
+      }
+    end
+
+    assert_response :success
+    assert_operator sql_count, :<=, 12
+  end
+
   private
 
-  def publish_resource(slug:, title:, summary:, kind: :mcp, source_provider: :github)
+  def publish_resource(slug:, title:, summary:, kind: :mcp, source_provider: :github, categories: [], tags: [])
     resource = Resource.create!(
       kind: kind,
       slug: slug,
@@ -66,6 +99,28 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
       review_status: :approved
     )
     resource.publish!(revision: revision)
+    categories.each do |category_slug|
+      resource.resource_categories.create!(category: Category.find_by!(slug: category_slug), origin: :ai)
+    end
+    tags.each do |tag_slug|
+      resource.controlled_resource_tags.create!(tag: Tag.find_by!(slug: tag_slug), origin: :ai)
+    end
     resource
+  end
+
+  def count_index_sql
+    count = 0
+    subscriber = lambda do |_name, _started, _finished, _unique_id, payload|
+      next if payload[:cached]
+      next if %w[SCHEMA TRANSACTION].include?(payload[:name])
+
+      count += 1
+    end
+
+    ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
+      yield
+    end
+
+    count
   end
 end
