@@ -12,6 +12,7 @@
 !/.env.example
 /env
 /.firecrawl/
+/.wrangler/
 
 # Ignore all logfiles and tempfiles.
 /log/*
