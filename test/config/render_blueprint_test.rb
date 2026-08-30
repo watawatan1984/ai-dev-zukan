@@ -23,4 +23,15 @@ class RenderBlueprintTest < ActiveSupport::TestCase
 
     assert_equal [ "DATABASE_URL" ], database_keys
   end
+
+  test "publishes the approved initial catalog during the first deploy hook" do
+    blueprint = YAML.safe_load_file(Rails.root.join("render.yaml"))
+    service = blueprint.fetch("services").find { |entry| entry.fetch("name") == "ai-dev-zukan" }
+    release_confirmation = service.fetch("envVars").find do |entry|
+      entry.fetch("key") == "INITIAL_CATALOG_RELEASE"
+    end
+
+    assert_includes service.fetch("initialDeployHook"), "catalog:bootstrap:release"
+    assert_equal "publish", release_confirmation.fetch("value")
+  end
 end

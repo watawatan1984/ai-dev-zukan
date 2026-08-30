@@ -66,6 +66,24 @@ namespace :catalog do
       )
       puts JSON.pretty_generate(target: result.target, published_counts: result.published_counts)
     end
+
+    desc "Publish the approved launch catalog with a locked system reviewer"
+    task release: :environment do
+      confirmation = ENV["INITIAL_CATALOG_RELEASE"]
+      abort "Set INITIAL_CATALOG_RELEASE=publish to run the initial release" unless confirmation == "publish"
+
+      reviewer = InitialCatalog::ReleaseReviewer.call
+      result = InitialCatalog::Publish.call(
+        reviewer:,
+        confirmation:,
+        limit: ENV.fetch("BOOTSTRAP_PER_KIND", 100)
+      )
+      puts JSON.pretty_generate(
+        target: result.target,
+        reviewer: reviewer.email,
+        published_counts: result.published_counts
+      )
+    end
   end
 
   namespace :snapshot do

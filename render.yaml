@@ -4,7 +4,7 @@ services:
     runtime: docker
     plan: free
     healthCheckPath: /up
-    initialDeployHook: bin/rails db:prepare catalog:snapshot:import
+    initialDeployHook: bin/rails db:prepare catalog:snapshot:import catalog:bootstrap:release
     autoDeployTrigger: checksPass
     envVars:
       - key: APP_HOST
@@ -42,6 +42,8 @@ services:
         sync: false
       - key: GAS_SCHEDULER_SECRET
         sync: false
+      - key: INITIAL_CATALOG_RELEASE
+        value: "publish"
       - key: R2_ACCESS_KEY_ID
         sync: false
       - key: R2_SECRET_ACCESS_KEY

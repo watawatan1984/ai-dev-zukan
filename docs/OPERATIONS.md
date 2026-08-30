@@ -64,9 +64,11 @@ docker compose run --rm web bin/rails catalog:snapshot:export
 
 ### Render / Supabaseへの初期投入
 
-`render.yaml`の`initialDeployHook`が初回の正常デプロイ後に`bin/rails db:prepare catalog:snapshot:import`を一度だけ実行する。空のSupabaseでもアプリとSolid Queueのテーブルを同じDBへ準備するため、ローカルDBへ固定されたDocker Composeコマンドに依存せず、同梱した`db/seed_data/initial_catalog.json`を冪等投入できる。形式、種類別件数、SHA-256が一致しなければ全体をtransactionで中止する。
+`render.yaml`の`initialDeployHook`が初回の正常デプロイ後に`bin/rails db:prepare catalog:snapshot:import catalog:bootstrap:release`を一度だけ実行する。空のSupabaseでもアプリとSolid Queueのテーブルを同じDBへ準備するため、ローカルDBへ固定されたDocker Composeコマンドに依存せず、同梱した`db/seed_data/initial_catalog.json`を冪等投入できる。形式、種類別件数、SHA-256が一致しなければ全体をtransactionで中止する。
 
-投入された400件はすべて`review_pending`かつ`unpublished`であり、初回デプロイだけで自動公開されることはない。管理者はWeb管理画面で出典と要約を確認して個別公開するか、品質レポートと管理画面のサンプルを確認した後、以下のtaskを本番環境で明示実行して各100件を監査ログ付きで公開する。
+snapshot import単体では400件を`review_pending`かつ`unpublished`で投入する。今回承認された初回公開ではBlueprintに`INITIAL_CATALOG_RELEASE=publish`を固定し、同じ初回hookのrelease taskが品質ゲートを再検証する。release taskは`release-bot@ai-dev-zukan.invalid`のログイン不能なlocked system adminを冪等作成し、各100件を監査ログ付きで公開する。
+
+初回hook以外で再公開する場合は、品質レポートと管理画面のサンプルを確認した後、以下のtaskを本番環境で明示実行する。
 
 ```powershell
 ADMIN_EMAIL=release-bot@ai-dev-zukan.invalid CONFIRM=publish bin/rails catalog:bootstrap:publish
