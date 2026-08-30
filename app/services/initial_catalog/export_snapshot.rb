@@ -1,7 +1,7 @@
 module InitialCatalog
   class ExportSnapshot
     FORMAT = "ai-dev-zukan.initial-catalog"
-    VERSION = 1
+    VERSION = 2
     InvalidCatalog = Class.new(StandardError)
     Result = Data.define(:path, :counts, :checksum)
 
@@ -19,6 +19,7 @@ module InitialCatalog
       raise InvalidCatalog, "Initial catalog quality gate failed" unless report.acceptable?
 
       records = serialized_records
+      taxonomy = taxonomy_payload
       counts = records.group_by { |record| record.dig("resource", "kind") }.transform_values(&:count)
       checksum = Digest::SHA256.hexdigest(JSON.generate(records))
       payload = {
@@ -27,6 +28,8 @@ module InitialCatalog
         "target" => target,
         "counts" => counts,
         "records_sha256" => checksum,
+        "taxonomy_sha256" => Digest::SHA256.hexdigest(JSON.generate(taxonomy)),
+        "taxonomy" => taxonomy,
         "records" => records
       }
       path.dirname.mkpath
@@ -75,14 +78,33 @@ module InitialCatalog
           "capabilities" => revision.capabilities,
           "key_points" => revision.key_points,
           "suggested_category_slug" => revision.suggested_category_slug,
+          "suggested_category_slugs" => revision.effective_suggested_category_slugs,
           "suggested_tag_slugs" => revision.suggested_tag_slugs,
+          "search_keywords" => revision.search_keywords,
           "ai_provider" => revision.ai_provider,
           "ai_model" => revision.ai_model,
           "prompt_version" => revision.prompt_version,
           "summary_basis" => revision.summary_basis,
           "summary_input_sha256" => revision.summary_input_sha256,
-          "summary_generated_at" => iso8601(revision.summary_generated_at)
+          "summary_generated_at" => iso8601(revision.summary_generated_at),
+          "taxonomy_status" => revision.taxonomy_status,
+          "taxonomy_origin" => revision.taxonomy_origin,
+          "taxonomy_provider" => revision.taxonomy_provider,
+          "taxonomy_model" => revision.taxonomy_model,
+          "taxonomy_prompt_version" => revision.taxonomy_prompt_version,
+          "taxonomy_input_sha256" => revision.taxonomy_input_sha256,
+          "taxonomy_generated_at" => iso8601(revision.taxonomy_generated_at),
+          "taxonomy_confidence" => revision.taxonomy_confidence&.to_f
         }
+      }
+    end
+
+    def taxonomy_payload
+      {
+        "version" => Taxonomy::Registry.version,
+        "categories" => Taxonomy::Registry.definition.fetch("categories"),
+        "tag_groups" => Taxonomy::Registry.definition.fetch("tag_groups"),
+        "tags" => Taxonomy::Registry.tags
       }
     end
 
