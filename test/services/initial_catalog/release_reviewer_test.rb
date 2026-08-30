@@ -18,4 +18,16 @@ class InitialCatalog::ReleaseReviewerTest < ActiveSupport::TestCase
       InitialCatalog::ReleaseReviewer.call(email: "admin@example.com")
     end
   end
+
+  test "renews an expired timed lock before a release" do
+    reviewer = InitialCatalog::ReleaseReviewer.call
+    reviewer.update!(locked_at: User.unlock_in.ago - 1.minute)
+
+    refute_predicate reviewer.reload, :access_locked?
+
+    renewed = InitialCatalog::ReleaseReviewer.call
+
+    assert_predicate renewed, :access_locked?
+    refute_predicate renewed, :active_for_authentication?
+  end
 end

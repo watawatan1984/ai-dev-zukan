@@ -19,7 +19,7 @@ module InitialCatalog
         reviewer.name = "Release Bot"
         reviewer.role = :admin
         reviewer.confirmed_at ||= Time.current
-        reviewer.locked_at ||= Time.current
+        reviewer.locked_at = Time.current
         set_initial_password(reviewer)
         reviewer.save!
         reviewer
