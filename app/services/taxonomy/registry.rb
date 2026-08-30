@@ -39,7 +39,7 @@ module Taxonomy
       end
 
       def category_slugs
-        definition.fetch("categories").map { |category| category.fetch("slug") }
+        definition.fetch("categories").select { |category| category.fetch("active") }.map { |category| category.fetch("slug") }
       end
 
       def tag_slugs

@@ -146,7 +146,8 @@ module Search
         "ON counted_controlled_resource_tags.tag_id = tags.id " \
         "AND counted_controlled_resource_tags.resource_id IN (#{base.select(:id).to_sql})"
       usage_join = "LEFT JOIN controlled_resource_tags usage_controlled_resource_tags " \
-        "ON usage_controlled_resource_tags.tag_id = tags.id"
+        "ON usage_controlled_resource_tags.tag_id = tags.id " \
+        "AND usage_controlled_resource_tags.resource_id IN (#{Resource.publicly_visible.select(:id).to_sql})"
 
       Tag.where(active: true)
         .joins(counted_join)

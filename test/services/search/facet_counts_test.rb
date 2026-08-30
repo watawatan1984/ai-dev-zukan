@@ -94,6 +94,34 @@ class Search::FacetCountsTest < ActiveSupport::TestCase
     refute_includes counts.fetch(:tags), "docker"
   end
 
+  test "tag usage visibility counts only public catalog resources" do
+    3.times do |index|
+      create_resource(slug: "facet-unpublished-python-#{index}", tags: [ "python" ])
+    end
+    archived = publish_resource(slug: "facet-archived-python", tags: [ "python" ])
+    archived.update!(publication_status: :archived)
+
+    counts = Search::FacetCounts.call(selection: Search::Selection.build(params: {}))
+
+    assert_includes counts.fetch(:tags), "ruby"
+    refute_includes counts.fetch(:tags), "python"
+  end
+
+  test "inactive category slugs from the taxonomy definition are ignored during selection normalization" do
+    definition = Taxonomy::Registry.definition.deep_dup
+    definition.fetch("categories").find { |category| category.fetch("slug") == "research-search" }["active"] = false
+    original_definition = Taxonomy::Registry.method(:definition)
+
+    Taxonomy::Registry.define_singleton_method(:definition) { definition }
+    begin
+      selection = Search::Selection.build(params: { category_slugs: [ "research-search" ] })
+
+      assert_empty selection.category_slugs
+    ensure
+      Taxonomy::Registry.define_singleton_method(:definition) { original_definition.call }
+    end
+  end
+
   private
 
   def publish_resource(slug:, kind: :qiita_article, source_provider: :qiita, categories: [ "coding-development" ], tags: [ "ruby" ])
@@ -115,6 +143,24 @@ class Search::FacetCountsTest < ActiveSupport::TestCase
       review_status: :approved
     )
     resource.publish!(revision: revision)
+    categories.each do |category_slug|
+      resource.resource_categories.create!(category: Category.find_by!(slug: category_slug), origin: :ai)
+    end
+    tags.each do |tag_slug|
+      resource.controlled_resource_tags.create!(tag: Tag.find_by!(slug: tag_slug), origin: :ai)
+    end
+    resource
+  end
+
+  def create_resource(slug:, kind: :qiita_article, source_provider: :qiita, categories: [ "coding-development" ], tags: [ "ruby" ])
+    resource = Resource.create!(
+      kind: kind,
+      slug: slug,
+      canonical_url: "https://example.com/#{slug}",
+      normalized_canonical_url: "https://example.com/#{slug}",
+      source_provider: source_provider,
+      external_uid: slug
+    )
     categories.each do |category_slug|
       resource.resource_categories.create!(category: Category.find_by!(slug: category_slug), origin: :ai)
     end

@@ -104,3 +104,79 @@ Known pre-existing environment warnings observed during Docker Rails commands:
 - Tag usage visibility is counted from controlled tag assignments. The current implementation does not delete or mutate legacy tag joins.
 - `result_count` is optional for service callers, but the controller passes the already-measured result count to avoid a duplicate count query.
 - No production deploy, GitHub push, or external mutation was performed.
+
+## Fix Round 1
+
+Commit: `fix: scope public facet visibility`
+
+### Findings Addressed
+
+- Public tag visibility threshold now counts distinct resources only from `Resource.publicly_visible`. Unpublished resources, resources with no `current_revision_id`, and archived resources do not make a tag visible. The `filterable: true` override remains in place.
+- `Taxonomy::Registry.category_slugs` now returns only active category slugs from the taxonomy definition, so inactive definition entries normalize away and do not narrow public search. This remains YAML-backed and does not add a DB query to the index request.
+
+### RED
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test test/services/search/facet_counts_test.rb
+```
+
+Result: `7 runs, 25 assertions, 2 failures, 0 errors, 0 skips`
+
+Expected failures:
+
+- A tag with three non-public assignments was incorrectly present in facet tags.
+- An inactive taxonomy-definition category slug was incorrectly accepted by `Search::Selection`.
+
+### GREEN
+
+Facet count focused:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test test/services/search/facet_counts_test.rb
+```
+
+Result: `7 runs, 25 assertions, 0 failures, 0 errors, 0 skips`
+
+Task 7 focused:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test test/services/search/facet_counts_test.rb test/services/search/resources_query_test.rb test/integration/public_discovery_test.rb
+```
+
+Result: `23 runs, 58 assertions, 0 failures, 0 errors, 0 skips`
+
+Full suite:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test
+```
+
+Result: `144 runs, 743 assertions, 0 failures, 0 errors, 0 skips`
+
+SQL ceiling:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test -e PRINT_SQL_COUNT=1 web ruby bin/rails test test/integration/public_discovery_test.rb -n test_index_search_uses_a_bounded_number_of_SQL_queries_with_facet_counts
+```
+
+Result: measured index SQL count `12`; test result `1 runs, 3 assertions, 0 failures, 0 errors, 0 skips`.
+
+### Lint and Diff Checks
+
+```powershell
+docker compose run --rm web bundle exec rubocop app/services/search/facet_counts.rb app/services/taxonomy/registry.rb test/services/search/facet_counts_test.rb test/integration/public_discovery_test.rb
+```
+
+Result: `4 files inspected, no offenses detected`
+
+```powershell
+docker compose run --rm web bundle exec rubocop
+```
+
+Result: `172 files inspected, no offenses detected`
+
+```powershell
+git diff --check
+```
+
+Result: exit 0, no whitespace errors.
