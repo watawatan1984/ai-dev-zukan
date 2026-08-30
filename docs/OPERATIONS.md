@@ -62,13 +62,28 @@ GitHub選定条件を変更した既存DBでは、`catalog:bootstrap:curate_mcp`
 docker compose run --rm web bin/rails catalog:snapshot:export
 ```
 
-### Render / Supabaseへの初期投入
+### Render / Supabaseへの初期投入と既存公開環境の更新
 
 `render.yaml`の`initialDeployHook`が初回の正常デプロイ後に`bin/rails db:prepare catalog:snapshot:import catalog:bootstrap:release`を一度だけ実行する。空のSupabaseでもアプリとSolid Queueのテーブルを同じDBへ準備するため、ローカルDBへ固定されたDocker Composeコマンドに依存せず、同梱した`db/seed_data/initial_catalog.json`を冪等投入できる。形式、種類別件数、`records_sha256`、`taxonomy_sha256`が一致しなければ全体をtransactionで中止する。
 
 snapshot import単体では400件を`review_pending`かつ`unpublished`で投入する。version 2 snapshot は、各recordの`revision.suggested_category_slugs`、`revision.suggested_tag_slugs`、`revision.search_keywords`、`revision.taxonomy_status`、`revision.taxonomy_origin`、`revision.taxonomy_provider`、`revision.taxonomy_model`、`revision.taxonomy_prompt_version`、`revision.taxonomy_input_sha256`、`revision.taxonomy_generated_at`、`revision.taxonomy_confidence`と、トップレベルの`taxonomy` / `taxonomy_sha256`を含む。今回承認された初回公開ではBlueprintに`INITIAL_CATALOG_RELEASE=publish`を固定し、同じ初回hookのrelease taskが品質ゲートを再検証する。release taskは`release-bot@ai-dev-zukan.invalid`のログイン不能なlocked system adminを冪等作成し、各100件を監査ログ付きで公開する。
 
-初回hook以外で再公開する場合は、品質レポートと管理画面のサンプルを確認した後、以下のtaskを本番環境で明示実行する。
+既存のRender Freeデプロイですでに各kind 100件が公開済みの場合、`catalog:bootstrap:release`は初回公開用のためcurrent revisionを切り替えない。この場合はRender Shellで手作業実行せず、ローカル環境からSupabaseのSession Pooler `DATABASE_URL`を一時的に指定して、チェックサム済みsnapshotを既存公開リソースへ適用する。
+
+```powershell
+$env:DATABASE_URL="<Supabase Session Pooler URL with sslmode=require>"
+$env:RAILS_ENV="production"
+$env:INITIAL_CATALOG_SNAPSHOT="db/seed_data/initial_catalog.json"
+$env:BOOTSTRAP_PER_KIND="100"
+$env:INITIAL_CATALOG_SNAPSHOT_RELEASE="release-existing-catalog-snapshot"
+bundle exec rails db:prepare catalog:snapshot:release_existing
+```
+
+`catalog:snapshot:release_existing`は、snapshotのtarget・kind別件数・`records_sha256`・`taxonomy_sha256`を検証し、同じtransaction内でimportと400件のcurrent revision切替を実行する。対象はsnapshotの`kind`、`provider`、`external_uid`、正規化URL、`source_fingerprint`が完全一致する既存公開リソースだけで、候補revisionはtaxonomy succeededかつcontrolled validation validでなければならない。確認文字列は初回公開の`INITIAL_CATALOG_RELEASE=publish`とは別の`INITIAL_CATALOG_SNAPSHOT_RELEASE=release-existing-catalog-snapshot`を使う。
+
+成功後に同じtaskを再実行した場合は、current revisionがすでにsnapshot revisionを指していることとkind別100件を再検証し、`switched_count: 0`のno-opになる。失敗時はtransactionによりcurrent revisionの部分切替を残さない。旧approved revision、`resources.category_id`、legacy `resource_tags`はrollback用に保持し、削除しない。
+
+空の環境で初回hookを使わずに手動で初回公開する場合だけ、品質レポートと管理画面のサンプルを確認した後、以下のtaskを本番環境で明示実行する。既存公開済み環境のsnapshot更新には使わない。
 
 ```powershell
 ADMIN_EMAIL=release-bot@ai-dev-zukan.invalid CONFIRM=publish bin/rails catalog:bootstrap:publish

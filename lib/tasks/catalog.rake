@@ -109,6 +109,28 @@ namespace :catalog do
         counts: result.counts
       )
     end
+
+    desc "Update an existing published catalog from the checked snapshot artifact"
+    task release_existing: :environment do
+      confirmation = ENV["INITIAL_CATALOG_SNAPSHOT_RELEASE"]
+      unless confirmation == InitialCatalog::ReleaseSnapshot::CONFIRMATION
+        abort "Set INITIAL_CATALOG_SNAPSHOT_RELEASE=#{InitialCatalog::ReleaseSnapshot::CONFIRMATION} to update the existing catalog"
+      end
+
+      reviewer = InitialCatalog::ReleaseReviewer.call
+      result = InitialCatalog::ReleaseSnapshot.call(
+        path: ENV.fetch("INITIAL_CATALOG_SNAPSHOT", Rails.root.join("db/seed_data/initial_catalog.json")),
+        target: ENV.fetch("BOOTSTRAP_PER_KIND", 100),
+        reviewer:,
+        confirmation:
+      )
+      puts JSON.pretty_generate(
+        target: result.target,
+        reviewer: reviewer.email,
+        switched_count: result.switched_count,
+        current_counts: result.current_counts
+      )
+    end
   end
 
   namespace :taxonomy do
