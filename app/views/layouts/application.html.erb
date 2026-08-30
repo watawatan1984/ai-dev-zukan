@@ -71,5 +71,16 @@
     <main id="main-content" class="page-shell" data-controller="search-shortcut" data-action="keydown@window->search-shortcut#focus">
       <%= yield %>
     </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>AI開発図鑑 — 出典へつながる開発者向けライブラリー</p>
+        <nav aria-label="フッターナビゲーション">
+          <%= link_to "プライバシーポリシー", privacy_path %>
+          <%= link_to "利用規約", terms_path %>
+          <%= link_to "GitHub", "https://github.com/watawatan1984/ai-dev-zukan", target: "_blank", rel: "noopener noreferrer" %>
+        </nav>
+      </div>
+    </footer>
   </body>
 </html>

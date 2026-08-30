@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
 
   root "resources#index"
+  get "privacy", to: "pages#privacy", as: :privacy
+  get "terms", to: "pages#terms", as: :terms
   resources :resources, only: [ :index, :show ], param: :slug do
     resource :bookmark, only: [ :create, :destroy ]
     resource :hidden_resource, only: [ :create, :destroy ]
