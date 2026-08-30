@@ -109,7 +109,7 @@ class PublicCatalogTest < ApplicationSystemTestCase
     click_on "結果を見る"
 
     assert_current_path resources_path, ignore_query: true
-    assert_no_current_path(/sources/)
+    assert_no_current_path(/[?&]sources(?:%5B%5D|\[\])?=/)
 
     click_on "絞り込み"
     assert_selector "[role='dialog'][aria-modal='true']", visible: true
