@@ -16,6 +16,7 @@ module Taxonomy
       raise InvalidTag, "Only an admin can create tags" unless actor.admin?
 
       Tag.transaction do
+        lock_vocabulary_tables
         validate!
         tag = Tag.create!(
           slug: slug,
@@ -58,6 +59,9 @@ module Taxonomy
       raise InvalidTag, "unknown tag group: #{group}" unless allowed_groups.include?(group)
       raise InvalidTag, "duplicate tag slug: #{slug}" if Tag.exists?(slug:)
       raise InvalidTag, "duplicate tag name: #{name}" if Tag.exists?(normalized_name:)
+      if TagAlias.exists?(normalized_name: slug)
+        raise InvalidTag, "canonical slug collides with existing alias: #{slug}"
+      end
 
       aliases.each do |alias_name|
         normalized_alias = Taxonomy::Registry.normalize(alias_name)
@@ -70,6 +74,10 @@ module Taxonomy
         .tally
         .find { |_alias_name, count| count > 1 }
       raise InvalidTag, "duplicate alias: #{duplicated_alias.first}" if duplicated_alias
+    end
+
+    def lock_vocabulary_tables
+      ActiveRecord::Base.connection.execute("LOCK TABLE tags, tag_aliases IN SHARE ROW EXCLUSIVE MODE")
     end
 
     def allowed_groups

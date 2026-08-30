@@ -82,6 +82,28 @@ class AdminTaxonomyWorkflowTest < ActionDispatch::IntegrationTest
     assert_match(/unknown tag group/, response.body)
   end
 
+  test "tag creation rejects a canonical slug that collides with an existing alias" do
+    sign_in @admin
+    assert_equal "ruby-on-rails", Taxonomy::Registry.resolve_tag_slug("rails")
+
+    assert_no_difference [ "Tag.count", "TagAlias.count", "AdminAuditLog.count" ] do
+      post admin_tags_path, params: {
+        tag: {
+          slug: "rails",
+          name: "Rails Alias Takeover",
+          vocabulary_group: "language_framework",
+          aliases: "rails-new",
+          active: "1",
+          filterable: "1"
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_match(/canonical slug collides with existing alias: rails/, response.body)
+    assert_equal "ruby-on-rails", Taxonomy::Registry.resolve_tag_slug("rails")
+  end
+
   test "admin merges tags by moving controlled joins aliases and auditing without touching legacy joins" do
     sign_in @admin
     destination = Tag.find_by!(slug: "ruby")
