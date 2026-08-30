@@ -36,8 +36,9 @@ module Taxonomy
       validate_duplicates(slugs, "category")
 
       active_slugs = Category.where(active: true, slug: slugs).pluck(:slug)
+      controlled_slugs = fixed_category_slugs & active_slugs
       slugs.each do |slug|
-        errors << "unknown category: #{slug}" unless active_slugs.include?(slug)
+        errors << "unknown category: #{slug}" unless controlled_slugs.include?(slug)
       end
 
       slugs
@@ -90,6 +91,10 @@ module Taxonomy
     def validate_content_type_tags(slugs)
       errors << "tag restates content type: mcp" if revision.resource.kind_mcp? && slugs.include?("mcp")
       errors << "tag restates content type: agent-skills" if revision.resource.kind_skill? && slugs.include?("agent-skills")
+    end
+
+    def fixed_category_slugs
+      Taxonomy::Registry.definition.fetch("categories").map { |category| category.fetch("slug") }
     end
 
     def resolve_tag_slug(value)

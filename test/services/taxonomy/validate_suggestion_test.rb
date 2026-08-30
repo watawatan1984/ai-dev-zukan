@@ -51,6 +51,52 @@ class Taxonomy::ValidateSuggestionTest < ActiveSupport::TestCase
     assert_includes result.errors, "unknown tag: ruby on rails"
   end
 
+  test "rejects active categories outside the fixed taxonomy definition" do
+    Category.create!(
+      slug: "admin-added-category",
+      name: "Admin Added Category",
+      active: true
+    )
+    revision = build_revision(
+      suggested_category_slugs: [ "admin-added-category" ],
+      suggested_tag_slugs: [ "ruby", "testing" ]
+    )
+
+    result = Taxonomy::ValidateSuggestion.call(revision:)
+
+    assert_not result.valid?
+    assert_includes result.errors, "unknown category: admin-added-category"
+  end
+
+  test "allows active db-only tags but rejects inactive tags" do
+    Tag.create!(
+      slug: "admin-audited-tool",
+      name: "Admin Audited Tool",
+      normalized_name: "admin-audited-tool",
+      active: true
+    )
+    Tag.create!(
+      slug: "inactive-admin-tool",
+      name: "Inactive Admin Tool",
+      normalized_name: "inactive-admin-tool",
+      active: false
+    )
+
+    accepted = build_revision(
+      suggested_category_slugs: [ "coding-development" ],
+      suggested_tag_slugs: [ "admin-audited-tool", "testing" ]
+    )
+    rejected = build_revision(
+      suggested_category_slugs: [ "coding-development" ],
+      suggested_tag_slugs: [ "inactive-admin-tool", "testing" ]
+    )
+
+    assert_predicate Taxonomy::ValidateSuggestion.call(revision: accepted), :valid?
+    result = Taxonomy::ValidateSuggestion.call(revision: rejected)
+    assert_not result.valid?
+    assert_includes result.errors, "unknown tag: inactive-admin-tool"
+  end
+
   test "rejects content type tags that only restate mcp or skill resources" do
     mcp_revision = build_revision(
       kind: :mcp,

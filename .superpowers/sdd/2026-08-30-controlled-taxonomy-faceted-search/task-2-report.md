@@ -242,3 +242,162 @@ No forbidden category/tag creation remains in validation, approval, application,
 
 - The known Windows CRLF binstub warnings and Rack frozen-string warnings still appear during Docker commands, matching the task's allowed warning context.
 - `test/services/initial_catalog/publish_test.rb` was not in the initial file list, but the full suite failed until its old fixture revisions were given valid controlled taxonomy. This is test-data alignment with the new approval contract, not a production-path expansion.
+
+## Fix Round 1
+
+### Review Finding
+
+`Taxonomy::ValidateSuggestion` validated categories against active DB rows only. That let active DB categories outside the fixed YAML taxonomy pass validation.
+
+Controller ruling applied:
+
+- Categories are fixed and must be validated against the exact YAML category definitions plus active DB state.
+- Tags remain runtime controlled by active DB rows; active audited admin-added tags absent from YAML are allowed.
+- Inactive or unknown tags still fail.
+
+### Changed Behavior
+
+- `Taxonomy::ValidateSuggestion` now accepts a category only when its slug is both active in the DB and present in `config/taxonomy.yml`.
+- Tag validation remains DB-active allowlist based, preserving support for active admin-added tags absent from YAML.
+
+### Covering Tests
+
+- `test/services/taxonomy/validate_suggestion_test.rb` now covers:
+  - active category outside the fixed YAML taxonomy is rejected;
+  - active DB-only tag is accepted;
+  - inactive DB tag is rejected.
+
+### RED
+
+Command:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test test/services/taxonomy/validate_suggestion_test.rb -n "/rejects active categories outside the fixed taxonomy definition/"
+```
+
+Output:
+
+```text
+bin/rails:1: warning: shebang line ending with \r may cause problems
+Please switch from -n/--name to -i/--include
+/usr/bin/env: 'ruby\r': No such file or directory
+/usr/bin/env: use -[v]S to pass options in shebang lines
+Running 9 tests in a single process (parallelization threshold is 50)
+Run options: -n "/rejects active categories outside the fixed taxonomy definition/" --seed 14342
+
+# Running:
+
+F
+
+Failure:
+Taxonomy::ValidateSuggestionTest#test_rejects_active_categories_outside_the_fixed_taxonomy_definition [test/services/taxonomy/validate_suggestion_test.rb:67]:
+Expected true to be nil or false
+
+Finished in 1.022781s, 0.9777 runs/s, 0.9777 assertions/s.
+1 runs, 1 assertions, 1 failures, 0 errors, 0 skips
+```
+
+### GREEN
+
+Command:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test test/services/taxonomy/validate_suggestion_test.rb
+```
+
+Output:
+
+```text
+bin/rails:1: warning: shebang line ending with \r may cause problems
+/usr/bin/env: 'ruby\r': No such file or directory
+/usr/bin/env: use -[v]S to pass options in shebang lines
+Running 9 tests in a single process (parallelization threshold is 50)
+Run options: --seed 59284
+
+# Running:
+
+.........
+
+Finished in 10.507514s, 0.8565 runs/s, 2.9503 assertions/s.
+9 runs, 31 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Command:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test test/services/taxonomy/validate_suggestion_test.rb test/services/editorial/approve_and_publish_test.rb test/models/resource_publication_test.rb
+```
+
+Output:
+
+```text
+bin/rails:1: warning: shebang line ending with \r may cause problems
+/usr/bin/env: 'ruby\r': No such file or directory
+/usr/bin/env: use -[v]S to pass options in shebang lines
+Running 16 tests in a single process (parallelization threshold is 50)
+Run options: --seed 42142
+
+# Running:
+
+................
+
+Finished in 15.097389s, 1.0598 runs/s, 6.9548 assertions/s.
+16 runs, 105 assertions, 0 failures, 0 errors, 0 skips
+```
+
+### Full Suite / Hygiene
+
+Command:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rails test
+```
+
+Output:
+
+```text
+bin/rails:1: warning: shebang line ending with \r may cause problems
+tailwindcss v4.3.3
+Done in 701ms
+/usr/bin/env: 'ruby\r': No such file or directory
+/usr/bin/env: use -[v]S to pass options in shebang lines
+Running 86 tests in parallel using 6 processes
+Run options: --seed 50484
+
+# Running:
+
+......... Rack literal string frozen warnings ...
+...........................................................................
+
+Finished in 8.219975s, 10.4623 runs/s, 50.4868 assertions/s.
+86 runs, 415 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Command:
+
+```powershell
+docker compose run --rm -e RAILS_ENV=test web ruby bin/rubocop
+```
+
+Output:
+
+```text
+bin/rubocop:1: warning: shebang line ending with \r may cause problems
+Inspecting 156 files
+............................................................................................................................................................
+
+156 files inspected, no offenses detected
+```
+
+Command:
+
+```powershell
+git diff --check
+```
+
+Output:
+
+```text
+warning: in the working copy of 'app/services/taxonomy/validate_suggestion.rb', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/services/taxonomy/validate_suggestion_test.rb', LF will be replaced by CRLF the next time Git touches it
+```
