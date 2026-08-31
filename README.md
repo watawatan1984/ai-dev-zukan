@@ -16,15 +16,12 @@ AI開発の情報は毎日増えています。MCPサーバーはGitHubに散ら
 
 AI開発図鑑は、その探索コストを下げるための小さなサービスです。MCP、Skills、Zenn、Qiitaを横断して集め、AI要約、投稿日、投稿者、人気、カテゴリ、タグをカードで見られるようにしました。気になるリソースはブックマークでき、不要なものは非表示にできます。
 
-同時に、このリポジトリはRuby on Railsの転職・副業案件獲得用ポートフォリオでもあります。単にAI APIを呼ぶだけではなく、外部データ取込、非同期処理、管理者承認、検索UX、SEO、CI、無料枠運用までをひとつのRailsアプリとして組み込んでいます。
-
 ## 誰の何を解決するか
 
 | 対象 | 困りごと | AI開発図鑑でできること |
 | --- | --- | --- |
 | AI開発を追いたいエンジニア | GitHub、Zenn、Qiitaを毎回見に行くのが重い | 4種類のリソースを1画面で横断検索する |
 | MCP/Skillsを試したい人 | READMEを読む前に用途の当たりを付けたい | AI要約、スター数、カテゴリ、タグから候補を絞る |
-| Railsの実務力を見たい採用担当者 | ポートフォリオがCRUDだけだと判断材料が少ない | 認証、管理画面、非同期job、SEO、CI、運用設計まで確認できる |
 | 自分用の技術ライブラリーを作りたい人 | 収集元や分類軸を自分向けに変えたい | forkしてtaxonomyやsource adapterを差し替えられる |
 
 ## 数字で見る初回リリース
@@ -182,7 +179,7 @@ docker compose run --rm web bin/bundler-audit check --update
 
 GitHub Actionsでは、Rubyのsecurity scan、JavaScript dependency audit、RuboCop、Rails test、system testを実行します。Renderは`main`のchecks passを自動デプロイ条件にしています。
 
-## 運用証拠として見てほしいところ
+## 設計と運用を深掘りする
 
 - [PRD](docs/PRD.md): 目的、MVP、対象外、成功条件
 - [Architecture](docs/ARCHITECTURE.md): Resource/Revision、外部取込、AI要約、デプロイ制約
