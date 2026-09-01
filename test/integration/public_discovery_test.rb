@@ -156,13 +156,80 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     assert_select "[data-active-filters]", count: 0
   end
 
-  test "facet filter controller clears open state on desktop resize" do
-    controller = Rails.root.join("app/javascript/controllers/facet_filter_controller.js").read
-    sync_panel_mode = controller[/syncPanelMode\(\) \{(?<body>.*?)\n  \}/m, :body]
+  test "public discovery explains the search model and labels active filters accessibly" do
+    get resources_path, params: { q: "Ruby", content_types: [ "mcp" ], tag_slugs: [ "ruby" ] }
 
-    assert_includes sync_panel_mode, "this.panelTarget.classList.remove(\"is-open\")"
-    assert_includes sync_panel_mode, "document.removeEventListener(\"keydown\", this.boundEscape)"
-    assert_includes sync_panel_mode, "deactivateDialog({ visible: true })"
+    assert_response :success
+    assert_select "[data-search-model-help]", text: /同じ欄ではOR、欄をまたぐとANDで絞り込みます。/
+    assert_select "[data-facet-count-help]", text: /条件を追加した後の検索結果件数/
+    assert_select "[data-resource-definitions]", text: /MCP: AIと外部ツールをつなぐ仕組み/
+    assert_select "[data-resource-definitions]", text: /Skill: AIエージェント向けの手順・機能/
+    assert_select "[data-resource-definitions]", text: /Blog: Zenn・Qiitaの技術記事/
+    assert_select "[data-active-filters] a[aria-label='MCP の絞り込みを解除']"
+    assert_select "[data-active-filters] a[aria-label='検索語「Ruby」の絞り込みを解除']"
+  end
+
+  test "zero results offer query, facet, and full recovery paths" do
+    get resources_path, params: { q: "no-such-resource", content_types: [ "mcp" ] }
+
+    assert_response :success
+    assert_select ".empty-state a[href*='content_types']", text: /検索語だけ解除/
+    assert_select ".empty-state a[href*='q=no-such-resource']", text: /絞り込みだけ解除/
+    assert_select ".empty-state a[href='/resources']", text: "すべての条件を解除"
+  end
+
+  test "filtered discovery uses a compact hero and anonymous visitors see registration benefit" do
+    get resources_path, params: { q: "Ruby" }
+
+    assert_response :success
+    assert_select ".compact-hero"
+    assert_select ".registration-benefit", text: /無料登録すると、リソースを保存・非表示にできます。/
+
+    get resources_path
+
+    assert_response :success
+    assert_select ".landing-hero"
+  end
+
+  test "detail links preserve safe filtered return path and reject unsafe values" do
+    resource = publish_resource(slug: "return-path-mcp", title: "Return Path MCP", summary: "MCPです。")
+
+    get resources_path, params: { q: "Return", content_types: [ "mcp" ] }
+    assert_response :success
+    assert_select ".resource-card a[href*='return_to=']"
+
+    get resource_path(resource.slug), params: { return_to: resources_path(q: "Return", content_types: [ "mcp" ]) }
+    assert_response :success
+    assert_select "a.back-link[href*='q=Return']"
+
+    [ "https://evil.example/", "//evil.example/resources", "not a path", "/admin" ].each do |unsafe|
+      get resource_path(resource.slug), params: { return_to: unsafe }
+      assert_response :success
+      assert_select "a.back-link[href='/resources']"
+    end
+  end
+
+  test "detail presentation has an early source CTA, Japanese date, and provider popularity label" do
+    resource = publish_resource(slug: "presentation-zenn", title: "Presentation Zenn", summary: "記事です.", kind: :zenn_article, source_provider: :zenn)
+    resource.update!(popularity_raw: 1234)
+    github = publish_resource(slug: "presentation-github", title: "Presentation GitHub", summary: "MCPです.", kind: :mcp, source_provider: :github)
+    github.update!(popularity_raw: 42)
+    qiita = publish_resource(slug: "presentation-qiita", title: "Presentation Qiita", summary: "記事です.", kind: :qiita_article, source_provider: :qiita)
+    qiita.update!(popularity_raw: 84)
+
+    get resources_path
+    assert_response :success
+    assert_select ".resource-card time", text: /年.*月.*日/
+    assert_select ".resource-card .card-stats", text: /Zenn いいね/
+    assert_select ".resource-card .card-stats", text: /GitHub Stars/
+    assert_select ".resource-card .card-stats", text: /Qiita いいね/
+
+    get resource_path(resource.slug)
+    assert_response :success
+    assert_select ".source-cta-top a", text: "Zennで見る ↗"
+    assert_select ".resource-detail > .source-cta-top + .summary-card"
+    assert_select ".source-card"
+    assert_select ".detail-byline time", text: /年.*月.*日/
   end
 
   private

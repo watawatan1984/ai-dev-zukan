@@ -10,7 +10,9 @@ RUN apt-get update -qq && \
       git \
       libpq-dev \
       libvips \
-      postgresql-client && \
+      postgresql-client \
+      chromium \
+      chromium-driver && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 ENV BUNDLE_PATH="/usr/local/bundle"
@@ -19,6 +21,8 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
 COPY . .
+
+RUN bin/rails tailwindcss:build
 
 EXPOSE 3000
 CMD ["bin/rails", "server", "-b", "0.0.0.0"]

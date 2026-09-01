@@ -9,25 +9,25 @@
   <nav class="active-filters" aria-label="適用中の絞り込み" data-active-filters>
     <span>適用中</span>
     <% if selection.query.present? %>
-      <%= link_to "検索: #{selection.query}", resources_path(selection.without(:q, selection.query).to_h), class: "active-chip" %>
+      <%= link_to "検索: #{selection.query}", resources_path(selection.without(:q, selection.query).to_h), class: "active-chip", aria: { label: "検索語「#{selection.query}」の絞り込みを解除" } %>
     <% end %>
     <% selection.content_types.each do |slug| %>
-      <%= link_to content_type_names.fetch(slug), resources_path(selection.without(:content_types, slug).to_h), class: "active-chip" %>
+      <%= link_to content_type_names.fetch(slug), resources_path(selection.without(:content_types, slug).to_h), class: "active-chip", aria: { label: "#{content_type_names.fetch(slug)} の絞り込みを解除" } %>
     <% end %>
     <% selection.sources.each do |slug| %>
-      <%= link_to source_names.fetch(slug), resources_path(selection.without(:sources, slug).to_h), class: "active-chip" %>
+      <%= link_to source_names.fetch(slug), resources_path(selection.without(:sources, slug).to_h), class: "active-chip", aria: { label: "#{source_names.fetch(slug)} の絞り込みを解除" } %>
     <% end %>
     <% selection.category_slugs.each do |slug| %>
-      <%= link_to category_names.fetch(slug, slug), resources_path(selection.without(:category_slugs, slug).to_h), class: "active-chip" %>
+      <%= link_to category_names.fetch(slug, slug), resources_path(selection.without(:category_slugs, slug).to_h), class: "active-chip", aria: { label: "#{category_names.fetch(slug, slug)} の絞り込みを解除" } %>
     <% end %>
     <% selection.tag_slugs.each do |slug| %>
-      <%= link_to tag_names.fetch(slug, slug), resources_path(selection.without(:tag_slugs, slug).to_h), class: "active-chip" %>
+      <%= link_to tag_names.fetch(slug, slug), resources_path(selection.without(:tag_slugs, slug).to_h), class: "active-chip", aria: { label: "#{tag_names.fetch(slug, slug)} の絞り込みを解除" } %>
     <% end %>
     <% if selection.period.present? %>
-      <%= link_to period_names.fetch(selection.period), resources_path(selection.without(:period, selection.period).to_h), class: "active-chip" %>
+      <%= link_to period_names.fetch(selection.period), resources_path(selection.without(:period, selection.period).to_h), class: "active-chip", aria: { label: "#{period_names.fetch(selection.period)} の絞り込みを解除" } %>
     <% end %>
     <% if sort_names.key?(selection.sort) %>
-      <%= link_to sort_names.fetch(selection.sort), resources_path(selection.without(:sort, selection.sort).to_h), class: "active-chip" %>
+      <%= link_to sort_names.fetch(selection.sort), resources_path(selection.without(:sort, selection.sort).to_h), class: "active-chip", aria: { label: "#{sort_names.fetch(selection.sort)} の絞り込みを解除" } %>
     <% end %>
     <%= link_to "すべて解除", resources_path(selection.query.present? ? { q: selection.query } : {}), class: "active-clear" %>
     <%= link_to "完全クリア", resources_path, class: "active-clear" if selection.query.present? %>

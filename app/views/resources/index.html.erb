@@ -9,8 +9,8 @@
         method: :get,
         id: filter_form_id,
         class: "resource-filter-form",
-        html: { role: "search" } do |form| %>
-    <section class="hero compact-hero">
+        html: { role: "search", data: { action: "submit->facet-filter#submit" } } do |form| %>
+    <section class="hero <%= @selection.filtered? ? "compact-hero" : "landing-hero" %>">
       <div class="hero-copy">
         <p class="eyebrow">AI DEVELOPMENT INDEX</p>
         <h1>次に使うMCP・Skill・技術記事を、<span>すばやく見つける。</span></h1>
@@ -26,11 +26,14 @@
               aria: { label: "リソースを検索" },
               data: { search_shortcut_target: "input" } %>
         <kbd>/</kbd>
-        <%= form.submit "検索", class: "button button-primary" %>
-        <button type="button" class="button button-secondary mobile-filter-trigger" data-action="facet-filter#open" data-facet-filter-target="openButton">
+        <%= form.submit "検索", class: "button button-primary resource-search-submit" %>
+        <button type="button" class="button button-secondary mobile-filter-trigger" data-action="facet-filter#open" data-facet-filter-target="openButton" disabled>
           絞り込み
         </button>
       </div>
+      <% unless user_signed_in? %>
+        <p class="registration-benefit">無料登録すると、リソースを保存・非表示にできます。</p>
+      <% end %>
     </section>
   <% end %>
 
@@ -45,11 +48,11 @@
           form_id: filter_form_id,
           result_count: @result_count %>
 
-    <div class="results-panel">
+    <div class="results-panel" data-facet-filter-target="results" aria-busy="false">
       <div class="results-heading">
         <div>
           <p class="eyebrow">LIBRARY</p>
-          <h2><%= number_with_delimiter(@result_count) %>件のリソース</h2>
+          <h2 id="results-heading" tabindex="-1" data-facet-filter-target="resultsHeading"><%= number_with_delimiter(@result_count) %>件のリソース</h2>
         </div>
         <% if @selection.query.present? %>
           <span class="query-chip">“<%= @selection.query %>” の検索結果</span>
@@ -67,7 +70,15 @@
             <p class="empty-icon" aria-hidden="true">⌕</p>
             <h2>該当するリソースがありません</h2>
             <p>検索語や絞り込み条件を変えてお試しください。</p>
-            <%= link_to "すべて表示", resources_path, class: "button button-secondary" %>
+            <div class="empty-actions">
+              <% if @selection.query.present? && @selection.filtered? %>
+                <%= link_to "検索語だけ解除（絞り込みを保持）", resources_path(@selection.to_h.except(:q)), class: "button button-secondary" %>
+              <% end %>
+              <% if @selection.query.present? && (@selection.content_types.any? || @selection.sources.any? || @selection.category_slugs.any? || @selection.tag_slugs.any? || @selection.period.present? || @selection.sort != "relevance") %>
+                <%= link_to "絞り込みだけ解除（検索語を保持）", resources_path(q: @selection.query), class: "button button-secondary" %>
+              <% end %>
+              <%= link_to "すべての条件を解除", resources_path, class: "button button-secondary" %>
+            </div>
           </div>
         <% end %>
       </div>

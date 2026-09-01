@@ -163,6 +163,50 @@ class PublicCatalogTest < ApplicationSystemTestCase
     assert_equal "light", page.evaluate_script("document.documentElement.dataset.theme")
   end
 
+  test "mobile filter opener is ready, traps focus, makes the catalog inert, and restores focus" do
+    page.current_window.resize_to(390, 844)
+    visit resources_path
+
+    opener = find_button("絞り込み")
+    assert_not opener.disabled?
+    opener.send_keys(:enter)
+    assert_selector "[role='dialog'][aria-modal='true']", visible: true
+    assert_equal "filters-title", page.evaluate_script("document.activeElement.id")
+    assert page.evaluate_script("document.querySelector('header').inert")
+
+    page.evaluate_script("document.querySelector('[data-facet-filter-target=\"initialFocus\"]').focus()")
+    page.send_keys(:tab)
+    assert page.evaluate_script("document.querySelector('[role=\"dialog\"]:focus-within') !== null")
+    30.times { page.send_keys(:tab) }
+    assert page.evaluate_script("document.querySelector('[role=\"dialog\"]:focus-within') !== null")
+
+    find("body").send_keys(:escape)
+    assert_equal "絞り込み", page.evaluate_script("document.activeElement.textContent.trim()")
+    assert_not page.evaluate_script("document.querySelector('header').inert")
+  end
+
+  test "mobile filter submission closes immediately and focuses results only after interaction navigation" do
+    page.current_window.resize_to(390, 844)
+    visit resources_path
+    click_on "絞り込み"
+    click_on "結果を見る"
+    assert_no_selector "[role='dialog'][aria-modal='true']", visible: true
+    assert_selector ".results-panel[aria-busy='false']", visible: true
+    assert_equal "results-heading", page.evaluate_script("document.activeElement.id")
+
+    visit resources_path(content_types: [ "mcp" ])
+    assert_not_equal "results-heading", page.evaluate_script("document.activeElement.id")
+  end
+
+  test "mobile header keeps login and readable theme controls" do
+    page.current_window.resize_to(390, 844)
+    visit resources_path
+
+    assert_selector "header a", text: "ログイン", visible: true
+    assert_selector "header select[aria-label='表示テーマ']", visible: true
+    assert_operator page.evaluate_script("document.querySelector('header select[aria-label=\"表示テーマ\"]').getBoundingClientRect().height"), :>=, 44
+  end
+
   private
 
   def focus_checkbox_by_tab(id, maximum_tabs: 80)

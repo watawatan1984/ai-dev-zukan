@@ -18,6 +18,7 @@ class ResourcesController < ApplicationController
 
   def show
     @resource = Resource.publicly_visible.includes(:current_revision).find_by!(slug: params[:slug])
+    @return_to = helpers.safe_return_path(params[:return_to])
     @bookmarked = current_user&.bookmarks&.exists?(resource: @resource)
     @recommendations = Recommendations::RelatedResources.call(resource: @resource, user: current_user)
   end
