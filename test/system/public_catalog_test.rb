@@ -189,6 +189,7 @@ class PublicCatalogTest < ApplicationSystemTestCase
     page.evaluate_script("sessionStorage.setItem('facet-filter:interaction', 'true')")
     page.evaluate_script("document.dispatchEvent(new Event('turbo:before-cache'))")
     assert_nil page.evaluate_script("sessionStorage.getItem('facet-filter:interaction')")
+    assert page.evaluate_script("document.querySelector('[data-facet-filter-target=\"openButton\"]').disabled")
   end
 
   test "mobile filter submission closes immediately and focuses results only after interaction navigation" do
@@ -202,6 +203,55 @@ class PublicCatalogTest < ApplicationSystemTestCase
 
     visit resources_path(content_types: [ "mcp" ])
     assert_not_equal "results-heading", page.evaluate_script("document.activeElement.id")
+  end
+
+  test "mobile filter focus trap wraps at the sheet boundaries without focusing the backdrop" do
+    page.current_window.resize_to(390, 844)
+    visit resources_path
+    click_on "絞り込み"
+
+    page.execute_script(<<~JS)
+      const focusables = Array.from(document.querySelector('.filter-sheet').querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )).filter((element) => element.offsetParent !== null)
+      focusables.at(-1).focus()
+    JS
+    page.send_keys(:tab)
+    assert_equal "filters-title", page.evaluate_script("document.activeElement.id")
+    assert_not_equal "filter-backdrop", page.evaluate_script("document.activeElement.className")
+
+    page.evaluate_script("document.querySelector('[data-facet-filter-target=\"initialFocus\"]').focus()")
+    page.send_keys(:shift, :tab)
+    assert page.evaluate_script(<<~JS)
+      (() => {
+        const focusables = Array.from(document.querySelector('.filter-sheet').querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )).filter((element) => element.offsetParent !== null)
+        return document.activeElement === focusables.at(-1)
+      })()
+    JS
+    assert_not_equal "filter-backdrop", page.evaluate_script("document.activeElement.className")
+  end
+
+  test "mobile filter submission exposes busy progress and prevents duplicate requests" do
+    page.current_window.resize_to(390, 844)
+    visit resources_path
+    page.driver.browser.network_conditions = { latency: 1500, download_throughput: 50_000, upload_throughput: 50_000 }
+    page.execute_script("window.__facetFetches = 0; document.addEventListener('turbo:before-fetch-request', () => window.__facetFetches += 1)")
+
+    click_on "絞り込み"
+    click_on "結果を見る"
+    assert_selector ".results-panel[aria-busy='true']", visible: :all
+    assert page.evaluate_script("document.querySelector('.mobile-result-action').disabled")
+    assert_equal "反映中…", page.evaluate_script("document.querySelector('.mobile-result-action').textContent.trim()")
+
+    page.execute_script("document.querySelector('#resource-filter-form').requestSubmit(document.querySelector('.mobile-result-action'))")
+    assert_equal 1, page.evaluate_script("window.__facetFetches")
+
+    assert_selector ".results-panel[aria-busy='false']", visible: :all
+    assert_equal "results-heading", page.evaluate_script("document.activeElement.id")
+  ensure
+    page.driver.browser.delete_network_conditions
   end
 
   test "mobile header keeps login and readable theme controls" do

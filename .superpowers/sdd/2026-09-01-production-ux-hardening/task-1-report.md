@@ -156,3 +156,78 @@ docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_H
 - No unrelated files were reverted. The pre-existing untracked plan remains untouched.
 
 Fix-round residual concerns are unchanged: the Render 502 remains outside this task, and Rack's future frozen-string warning remains pre-existing.
+
+## Final review fix wave
+
+### RED
+
+Behavior coverage was added before the final production changes:
+
+- The Turbo before-cache system assertion verifies that the mobile opener is disabled again while cached, after the controller has reset transient state.
+- Forward Tab from the final visible sheet control and Shift+Tab from the initial heading are asserted against the sheet boundary and explicitly reject the backdrop.
+- A delayed real browser network request exposes aria-busy, disabled controls, and progress text; a second requestSubmit attempt is made while the first request is in flight and the request count is asserted to remain one.
+- Definition-list tests require three dt and three dd elements.
+- Query-only and facet-only zero-result tests require only the distinct full-reset action; the existing combined query-plus-facet test continues to require all three recovery choices.
+- A deliberately long title is used to assert the source CTA precedes the detail header.
+
+After correcting the system test's JavaScript execution helper and progress-label expectation, the pre-fix RED runs were:
+
+~~~text
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test test/integration/public_discovery_test.rb
+14 runs, 151 assertions, 3 failures, 0 errors, 0 skips
+~~~
+
+Failures were the missing dt/dd semantics, the source CTA still following the detail header, and the duplicate query-only recovery action.
+
+~~~text
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test:system test/system/public_catalog_test.rb
+12 runs, 76 assertions, 2 failures, 0 errors, 0 skips
+~~~
+
+Failures were the opener not being disabled after turbo:before-cache and the focus trap wrapping to the backdrop. The newly added delayed-submit behavior passed against the existing implementation and was retained as a regression contract.
+
+### GREEN
+
+After the minimum fixes and image rebuild:
+
+~~~text
+docker compose build web
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test test/integration/public_discovery_test.rb
+14 runs, 168 assertions, 0 failures, 0 errors, 0 skips
+
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test:system test/system/public_catalog_test.rb
+12 runs, 79 assertions, 0 failures, 0 errors, 0 skips
+~~~
+
+### Required verification
+
+~~~text
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test
+182 runs, 1100 assertions, 0 failures, 0 errors, 0 skips
+
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bundle exec rubocop
+182 files inspected, no offenses detected
+
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bundle exec brakeman --no-pager
+Errors: 0
+Security Warnings: 0
+
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails tailwindcss:build
+Done in 652ms
+
+git diff --check
+passed
+~~~
+
+### Changes and self-review
+
+- resetTransientState disables the opener; connect remains the sole readiness transition that re-enables it after Stimulus reconnects.
+- Focusable discovery is scoped to .filter-sheet and explicitly includes the initial heading, so the backdrop cannot enter the Tab sequence and both boundary directions remain inside the visible sheet.
+- The source CTA is placed immediately before .detail-header, keeping it ahead of long titles while retaining the later source card.
+- resource-definitions now uses valid dt/dd pairs with compact styling.
+- Zero-result recovery actions are gated by one shared has_facet_filters condition, eliminating duplicate actions for query-only and facet-only states while preserving all three for combined states.
+- The delayed network test uses Selenium Chromium network throttling and a real form submission; no dependency, route, schema, production Dockerfile, search semantics, scoring, taxonomy, or data changes were introduced.
+- Changed files in this wave: app/assets/tailwind/application.css, app/javascript/controllers/facet_filter_controller.js, app/views/resources/_filter_panel.html.erb, app/views/resources/index.html.erb, app/views/resources/show.html.erb, test/integration/public_discovery_test.rb, and test/system/public_catalog_test.rb.
+- The pre-existing untracked docs/superpowers/plans/2026-09-01-production-ux-hardening.md remains untouched.
+
+Remaining concerns are unchanged: the Render 502 is outside this task, and the existing Rack future frozen-string warning remains pre-existing.

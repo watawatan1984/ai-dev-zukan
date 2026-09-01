@@ -162,9 +162,14 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-search-model-help]", text: /同じ欄ではOR、欄をまたぐとANDで絞り込みます。/
     assert_select "[data-facet-count-help]", text: /条件を追加した後の検索結果件数/
-    assert_select "[data-resource-definitions]", text: /MCP: AIと外部ツールをつなぐ仕組み/
-    assert_select "[data-resource-definitions]", text: /Skill: AIエージェント向けの手順・機能/
-    assert_select "[data-resource-definitions]", text: /Blog: Zenn・Qiitaの技術記事/
+    assert_select "[data-resource-definitions] dt", text: "MCP"
+    assert_select "[data-resource-definitions] dt", text: "Skill"
+    assert_select "[data-resource-definitions] dt", text: "Blog"
+    assert_select "[data-resource-definitions] dd", text: "AIと外部ツールをつなぐ仕組み"
+    assert_select "[data-resource-definitions] dd", text: "AIエージェント向けの手順・機能"
+    assert_select "[data-resource-definitions] dd", text: "Zenn・Qiitaの技術記事"
+    assert_select "[data-resource-definitions] dt", count: 3
+    assert_select "[data-resource-definitions] dd", count: 3
     assert_select "[data-active-filters] a[aria-label='MCP の絞り込みを解除']"
     assert_select "[data-active-filters] a[aria-label='検索語「Ruby」の絞り込みを解除']"
   end
@@ -176,6 +181,24 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     assert_select ".empty-state a[href*='content_types']", text: /検索語だけ解除/
     assert_select ".empty-state a[href*='q=no-such-resource']", text: /絞り込みだけ解除/
     assert_select ".empty-state a[href='/resources']", text: "すべての条件を解除"
+  end
+
+  test "query-only zero results show only the distinct full reset action" do
+    get resources_path, params: { q: "no-such-resource" }
+
+    assert_response :success
+    assert_select ".empty-state a", text: /検索語だけ解除/, count: 0
+    assert_select ".empty-state a", text: /絞り込みだけ解除/, count: 0
+    assert_select ".empty-state a[href='/resources']", text: "すべての条件を解除", count: 1
+  end
+
+  test "facet-only zero results show only the distinct full reset action" do
+    get resources_path, params: { content_types: [ "mcp" ], tag_slugs: [ "no-such-tag" ] }
+
+    assert_response :success
+    assert_select ".empty-state a", text: /検索語だけ解除/, count: 0
+    assert_select ".empty-state a", text: /絞り込みだけ解除/, count: 0
+    assert_select ".empty-state a[href='/resources']", text: "すべての条件を解除", count: 1
   end
 
   test "filtered discovery uses a compact hero and anonymous visitors see registration benefit" do
@@ -227,9 +250,17 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     get resource_path(resource.slug)
     assert_response :success
     assert_select ".source-cta-top a", text: "Zennで見る ↗"
-    assert_select ".resource-detail > .source-cta-top + .summary-card"
+    assert_select ".resource-detail > .source-cta-top + .detail-header"
     assert_select ".source-card"
     assert_select ".detail-byline time", text: /年.*月.*日/
+
+    long_title = "Zenn記事 " + ("非常に長いタイトル " * 30)
+    long_resource = publish_resource(slug: "presentation-long-title", title: long_title, summary: "長いタイトルの記事です.", kind: :zenn_article, source_provider: :zenn)
+    get resource_path(long_resource.slug)
+    assert_response :success
+    assert_select ".detail-header h1", text: /非常に長いタイトル/
+    assert_operator long_title.length, :>, 100
+    assert_select ".resource-detail > .source-cta-top + .detail-header"
   end
 
   private

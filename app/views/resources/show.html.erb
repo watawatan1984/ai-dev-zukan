@@ -21,6 +21,11 @@
 <article class="resource-detail">
   <%= link_to "← 一覧へ戻る", @return_to, class: "back-link" %>
 
+  <section class="source-cta-top" aria-label="公開元へのリンク">
+    <span>最新情報は公開元で確認</span>
+    <%= link_to "#{source_provider_label(@resource)}で見る ↗", @resource.canonical_url, target: "_blank", rel: "noopener noreferrer", class: "button button-primary" %>
+  </section>
+
   <header class="detail-header">
     <div class="card-meta">
       <span class="kind-badge kind-<%= @resource.kind %>"><%= resource_kind_label(@resource) %></span>
@@ -32,11 +37,6 @@
       <% if @resource.source_published_at.present? %><time datetime="<%= @resource.source_published_at.iso8601 %>"><%= public_date(@resource.source_published_at) %></time><% end %>
     </div>
   </header>
-
-  <section class="source-cta-top" aria-label="公開元へのリンク">
-    <span>最新情報は公開元で確認</span>
-    <%= link_to "#{source_provider_label(@resource)}で見る ↗", @resource.canonical_url, target: "_blank", rel: "noopener noreferrer", class: "button button-primary" %>
-  </section>
 
   <section class="summary-card">
     <p class="eyebrow">AI SUMMARY</p>

@@ -3,7 +3,7 @@
 <% tags_by_slug = @tags.index_by(&:slug) %>
 <% category_names = categories_by_slug.transform_values(&:name) %>
 <% tag_names = tags_by_slug.transform_values(&:name) %>
-
+<% has_facet_filters = @selection.content_types.any? || @selection.sources.any? || @selection.category_slugs.any? || @selection.tag_slugs.any? || @selection.period.present? || @selection.sort != "relevance" %>
 <div data-controller="facet-filter">
   <%= form_with url: resources_path,
         method: :get,
@@ -71,10 +71,10 @@
             <h2>該当するリソースがありません</h2>
             <p>検索語や絞り込み条件を変えてお試しください。</p>
             <div class="empty-actions">
-              <% if @selection.query.present? && @selection.filtered? %>
+              <% if @selection.query.present? && has_facet_filters %>
                 <%= link_to "検索語だけ解除（絞り込みを保持）", resources_path(@selection.to_h.except(:q)), class: "button button-secondary" %>
               <% end %>
-              <% if @selection.query.present? && (@selection.content_types.any? || @selection.sources.any? || @selection.category_slugs.any? || @selection.tag_slugs.any? || @selection.period.present? || @selection.sort != "relevance") %>
+              <% if @selection.query.present? && has_facet_filters %>
                 <%= link_to "絞り込みだけ解除（検索語を保持）", resources_path(q: @selection.query), class: "button button-secondary" %>
               <% end %>
               <%= link_to "すべての条件を解除", resources_path, class: "button button-secondary" %>

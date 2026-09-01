@@ -163,7 +163,10 @@ export default class extends Controller {
   }
 
   focusableDialogElements() {
-    return Array.from(this.panelTarget.querySelectorAll("a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"))
+    const sheet = this.panelTarget.querySelector(".filter-sheet")
+    if (!sheet) return []
+
+    return Array.from(sheet.querySelectorAll("a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1']), [data-facet-filter-target='initialFocus']"))
       .filter((element) => element.offsetParent !== null)
   }
 
@@ -182,6 +185,7 @@ export default class extends Controller {
     this.submitting = false
     this.setBusy(false)
     this.setBackgroundInert(false)
+    if (this.hasOpenButtonTarget) this.openButtonTarget.disabled = true
     this.panelTarget?.classList.remove("is-open")
     if (this.panelTarget) this.deactivateDialog()
     document.body.classList.remove("filter-sheet-open")
