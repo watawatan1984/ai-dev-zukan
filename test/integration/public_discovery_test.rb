@@ -202,7 +202,7 @@ class PublicDiscoveryTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a.back-link[href*='q=Return']"
 
-    [ "https://evil.example/", "//evil.example/resources", "not a path", "/admin" ].each do |unsafe|
+    [ "https://evil.example/", "//evil.example/resources", "not a path", "/admin", "/resources/other", "/resources/../../admin" ].each do |unsafe|
       get resource_path(resource.slug), params: { return_to: unsafe }
       assert_response :success
       assert_select "a.back-link[href='/resources']"

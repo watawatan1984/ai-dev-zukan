@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 const INTERACTION_KEY = "facet-filter:interaction"
+let interactionTriggered = false
 
 export default class extends Controller {
   static targets = [
@@ -61,6 +62,7 @@ export default class extends Controller {
       return
     }
     this.submitting = true
+    interactionTriggered = true
     sessionStorage.setItem(INTERACTION_KEY, "true")
     this.setBusy(true)
     this.setSubmittingControls(event.submitter)
@@ -134,11 +136,15 @@ export default class extends Controller {
   }
 
   setBackgroundInert(inert) {
+    const catalogContent = Array.from(this.element.querySelectorAll("*"))
+      .filter((element) => element !== this.panelTarget &&
+        !this.panelTarget.contains(element) &&
+        !element.contains(this.panelTarget))
     const siblings = [
       ...Array.from(document.body.children).filter((element) => !element.contains(this.element)),
-      ...Array.from(this.element.parentElement?.children || []).filter((element) => element !== this.element)
+      ...catalogContent
     ]
-    this.inertElements = this.inertElements || siblings
+    this.inertElements = [...new Set(siblings)]
     this.inertElements.forEach((element) => { element.inert = inert })
   }
 
@@ -164,8 +170,9 @@ export default class extends Controller {
   handleTurboLoad() {
     this.submitting = false
     this.setBusy(false)
-    if (sessionStorage.getItem(INTERACTION_KEY) !== "true") return
+    if (sessionStorage.getItem(INTERACTION_KEY) !== "true" && !interactionTriggered) return
     sessionStorage.removeItem(INTERACTION_KEY)
+    interactionTriggered = false
     if (!this.hasResultsHeadingTarget) return
     this.resultsHeadingTarget.focus({ preventScroll: true })
     this.resultsHeadingTarget.scrollIntoView({ block: "start", behavior: "smooth" })
@@ -179,6 +186,7 @@ export default class extends Controller {
     if (this.panelTarget) this.deactivateDialog()
     document.body.classList.remove("filter-sheet-open")
     document.removeEventListener("keydown", this.boundEscape)
+    sessionStorage.removeItem(INTERACTION_KEY)
     this.element?.querySelectorAll("button[type='submit'], input[type='submit']").forEach((control) => {
       control.disabled = false
       if (!control.dataset.originalLabel) return

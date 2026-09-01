@@ -173,6 +173,8 @@ class PublicCatalogTest < ApplicationSystemTestCase
     assert_selector "[role='dialog'][aria-modal='true']", visible: true
     assert_equal "filters-title", page.evaluate_script("document.activeElement.id")
     assert page.evaluate_script("document.querySelector('header').inert")
+    assert page.evaluate_script("document.querySelector('.hero').inert")
+    assert page.evaluate_script("document.querySelector('.results-panel').inert")
 
     page.evaluate_script("document.querySelector('[data-facet-filter-target=\"initialFocus\"]').focus()")
     page.send_keys(:tab)
@@ -183,6 +185,10 @@ class PublicCatalogTest < ApplicationSystemTestCase
     find("body").send_keys(:escape)
     assert_equal "絞り込み", page.evaluate_script("document.activeElement.textContent.trim()")
     assert_not page.evaluate_script("document.querySelector('header').inert")
+
+    page.evaluate_script("sessionStorage.setItem('facet-filter:interaction', 'true')")
+    page.evaluate_script("document.dispatchEvent(new Event('turbo:before-cache'))")
+    assert_nil page.evaluate_script("sessionStorage.getItem('facet-filter:interaction')")
   end
 
   test "mobile filter submission closes immediately and focuses results only after interaction navigation" do

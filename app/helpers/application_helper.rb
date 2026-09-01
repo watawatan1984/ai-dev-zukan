@@ -47,8 +47,7 @@ module ApplicationHelper
 
     uri = URI.parse(value)
     return resources_path unless uri.scheme.nil? && uri.host.nil? && uri.userinfo.nil?
-    return resources_path unless uri.path == "/resources" || uri.path.start_with?("/resources/")
-    return resources_path if uri.path.start_with?("//")
+    return resources_path unless uri.path == "/resources"
 
     value
   rescue URI::InvalidURIError

@@ -95,3 +95,64 @@ The brief's literal `bin/rails test:system TEST=test/system/public_catalog_test.
 
 - The intermittent Render 502 is not claimed fixed, per the ledger ruling; production diagnosis remains separate.
 - The existing Rack future frozen-string warning predates this task.
+
+## Fix round 1 — review findings
+
+### RED
+
+Before the review fixes, the covering behavior tests were extended to assert the three missing contracts:
+
+- The mobile dialog test asserts real catalog descendants (`.hero` and `.results-panel`) become inert while the sheet is open, then asserts the `facet-filter:interaction` session flag is removed during `turbo:before-cache`.
+- The return-path integration test rejects `/resources/other` and `/resources/../../admin` in addition to the existing unsafe values.
+
+Commands and important output:
+
+```text
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test test/integration/public_discovery_test.rb
+12 runs, 142 assertions, 1 failure, 0 errors, 0 skips
+```
+
+The failure was the newly covered `/resources/...` return path being accepted.
+
+```text
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test:system test/system/public_catalog_test.rb
+10 runs, 62 assertions, 1 failure, 0 errors, 0 skips
+```
+
+The failure was the newly covered `.hero.inert` assertion; the existing header assertion alone had passed.
+
+### GREEN
+
+After the minimum fixes and development-image rebuild:
+
+```text
+docker compose build web
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test test/integration/public_discovery_test.rb
+12 runs, 145 assertions, 0 failures, 0 errors, 0 skips
+
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test:system test/system/public_catalog_test.rb
+10 runs, 68 assertions, 0 failures, 0 errors, 0 skips
+```
+
+Additional verification after the fix:
+
+```text
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bundle exec rubocop app/helpers/application_helper.rb
+1 file inspected, no offenses detected
+
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bundle exec brakeman --no-pager
+Errors: 0
+Security Warnings: 0
+
+docker run --rm --network ux-audit-fixes_default -e RAILS_ENV=test -e DATABASE_HOST=db -e DATABASE_USERNAME=postgres -e DATABASE_PASSWORD=postgres ux-audit-fixes-web bin/rails test
+180 runs, 1077 assertions, 0 failures, 0 errors, 0 skips
+```
+
+### Changes and self-review
+
+- `setBackgroundInert` now directly marks every non-dialog catalog descendant inert, while excluding the dialog and all of its descendants; closing the sheet clears those states. The dialog itself is not inert.
+- `resetTransientState` removes `facet-filter:interaction`, so both `turbo:before-cache` and `disconnect` clear the session flag. The module-scoped submit marker preserves intentional post-filter Turbo result focus without leaving session storage stale.
+- `safe_return_path` now accepts only the exact `/resources` index path, retaining optional query and fragment components through URI parsing; detail-like, traversal-shaped, malformed, external, and protocol-relative values fall back to `/resources`.
+- No unrelated files were reverted. The pre-existing untracked plan remains untouched.
+
+Fix-round residual concerns are unchanged: the Render 502 remains outside this task, and Rack's future frozen-string warning remains pre-existing.
