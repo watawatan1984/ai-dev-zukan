@@ -6,7 +6,7 @@ MCP、Agent Skills、Zenn/Qiita記事を、出典付きAI要約と管理され�
 [![Ruby 3.4.4](https://img.shields.io/badge/Ruby-3.4.4-CC342D?logo=ruby&logoColor=white)](.ruby-version)
 [![Rails 8.1.3.1](https://img.shields.io/badge/Rails-8.1.3.1-D30001?logo=rubyonrails&logoColor=white)](Gemfile.lock)
 
-**[公開デモを見る](https://ai-dev-zukan.onrender.com/resources)** ・ **[設計判断を読む](docs/decisions)** ・ **[Forkして動かす](#forkして試す)**
+**[公開デモを見る (zukan.by0.uk)](https://zukan.by0.uk/)** ・ **[設計判断を読む](docs/decisions)** ・ **[Forkして動かす](#forkして試す)**
 
 ![AI開発図鑑の検索画面](docs/images/readme-discovery.png)
 
