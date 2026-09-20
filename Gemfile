@@ -26,7 +26,7 @@ gem "omniauth-rails_csrf_protection", "~> 2.0"
 gem "solid_queue", "~> 1.2"
 
 # HTTP clients for source APIs and NVIDIA NIM
-gem "faraday", "~> 2.0"
+gem "faraday", "~> 2.14"
 gem "rss", "~> 0.3"
 
 # HTTPS email delivery works on Render Free, where outbound SMTP ports are blocked.
